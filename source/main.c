@@ -31,6 +31,19 @@ int textHeight = 0;
 
 sf2d_texture *curr_tex;
 
+sf2d_texture *tex_torielHouse1;
+
+
+void render(){
+	sf2d_start_frame (GFX_TOP, GFX_LEFT);
+	sf2d_draw_texture (tex_torielHouse1, 0, 0);
+	sf2d_draw_texture (curr_tex, 180, 80);
+	sf2d_end_frame ();
+		
+	// Swap sf2d framebuffers and wait for VBlank
+	sf2d_swapbuffers ();
+}
+
 int main (int argc, char **argv) {
 
 	// Starting services
@@ -53,7 +66,7 @@ int main (int argc, char **argv) {
 	sf2d_texture *tex_friskBack = sfil_load_PNG_buffer(friskBack_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskLeft1 = sfil_load_PNG_buffer(friskLeft1_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskRight1 = sfil_load_PNG_buffer(friskRight1_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_torielHouse1 = sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
+	tex_torielHouse1 = sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
 	
 	// Play music
 	audio_load("sound/music/home.bin");
@@ -98,7 +111,7 @@ int main (int argc, char **argv) {
 		}
 		
 		else if (player == 3) {
-			curr_tex = tex_friskRight1
+			curr_tex = tex_friskRight1;
 		}
 		
 		// Localization/rooms
@@ -106,7 +119,7 @@ int main (int argc, char **argv) {
 		
 		}
 
-		render()
+		render();
 	}
 	
 	// Free images/textures/fonts from memory
@@ -129,15 +142,6 @@ int main (int argc, char **argv) {
 	return 0;
 }
 
-void render(){
-	sf2d_start_frame (GFX_TOP, GFX_LEFT);
-	sf2d_draw_texture (tex_torielHouse1, 0, 0);
-	sf2d_draw_texture (curr_tex, 180, 80);
-	sf2d_end_frame ();
-		
-	// Swap sf2d framebuffers and wait for VBlank
-	sf2d_swapbuffers ();
-}
 
 void audio_load (const char *audio) {
 	FILE *file = fopen (audio, "rb");
