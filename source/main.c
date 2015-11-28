@@ -29,6 +29,8 @@ int player = 0;
 int textWidth = 0;
 int textHeight = 0;
 
+sf2d_texture *curr_tex;
+
 int main (int argc, char **argv) {
 
 	// Starting services
@@ -82,41 +84,29 @@ int main (int argc, char **argv) {
 		}
 		
 		// Player sprites and movements
+		// next you'd want to create an xpos and ypos variable, and add/subtract them to move the player around
 		if (player == 0) {
-			sf2d_start_frame (GFX_TOP, GFX_LEFT);
-			sf2d_draw_texture (tex_torielHouse1, 0, 0);
-			sf2d_draw_texture (tex_friskFace, 180, 80);
-			sf2d_end_frame ();
+			curr_tex = tex_friskFace;
 		}
 		
 		else if (player == 1) {
-			sf2d_start_frame (GFX_TOP, GFX_LEFT);
-			sf2d_draw_texture (tex_torielHouse1, 0, 0);
-			sf2d_draw_texture (tex_friskBack, 180, 80);
-			sf2d_end_frame ();
+			curr_tex = tex_friskBack;
 		}
 		
 		else if (player == 2) {
-			sf2d_start_frame (GFX_TOP, GFX_LEFT);
-			sf2d_draw_texture (tex_torielHouse1, 0, 0);
-			sf2d_draw_texture (tex_friskLeft1, 180, 80);
-			sf2d_end_frame ();
+			curr_tex = tex_friskLeft1;
 		}
 		
 		else if (player == 3) {
-			sf2d_start_frame (GFX_TOP, GFX_LEFT);
-			sf2d_draw_texture (tex_torielHouse1, 0, 0);
-			sf2d_draw_texture (tex_friskRight1, 180, 80);
-			sf2d_end_frame ();
+			curr_tex = tex_friskRight1
 		}
 		
 		// Localization/rooms
 		if (room == 0) {
 		
 		}
-		
-		// Swap sf2d framebuffers and wait for VBlank
-		sf2d_swapbuffers ();
+
+		render()
 	}
 	
 	// Free images/textures/fonts from memory
@@ -137,6 +127,16 @@ int main (int argc, char **argv) {
 	srvExit();
 
 	return 0;
+}
+
+void render(){
+	sf2d_start_frame (GFX_TOP, GFX_LEFT);
+	sf2d_draw_texture (tex_torielHouse1, 0, 0);
+	sf2d_draw_texture (curr_tex, 180, 80);
+	sf2d_end_frame ();
+		
+	// Swap sf2d framebuffers and wait for VBlank
+	sf2d_swapbuffers ();
 }
 
 void audio_load (const char *audio) {
