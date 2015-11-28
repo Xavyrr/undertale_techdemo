@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
+#include <time.h>
 #include "eightbit_ttf.h"
 
 // Load images
@@ -25,6 +27,9 @@ static void audio_stop(void);
 // Variables
 int room = 0;
 int player = 0;
+int player_x = 180;
+int player_y = 80;
+int player_sprite = 0;
 
 int textWidth = 0;
 int textHeight = 0;
@@ -62,22 +67,24 @@ int main (int argc, char **argv) {
 		// Verify button presses
 		hidScanInput ();
 		u32 kDown = hidKeysDown ();
+		u32 kHeld = hidKeysHeld();
+		u32 kUp = hidKeysUp();
 		
 		if (kDown & KEY_START) break;
 		
-		else if (kDown & KEY_UP) {
+		else if (kHeld & KEY_UP) {
 			player = 1;
 		}
 		
-		else if (kDown & KEY_DOWN) {
+		else if (kHeld & KEY_DOWN) {
 			player = 0;
 		}
 		
-		else if (kDown & KEY_LEFT) {
+		else if (kHeld & KEY_LEFT) {
 			player = 2;
 		}
 		
-		else if (kDown & KEY_RIGHT) {
+		else if (kHeld & KEY_RIGHT) {
 			player = 3;
 		}
 		
@@ -85,28 +92,40 @@ int main (int argc, char **argv) {
 		if (player == 0) {
 			sf2d_start_frame (GFX_TOP, GFX_LEFT);
 			sf2d_draw_texture (tex_torielHouse1, 0, 0);
-			sf2d_draw_texture (tex_friskFace, 180, 80);
+			sf2d_draw_texture (tex_friskFace, player_x, player_y -= 1);
+			player_sprite = 0;
 			sf2d_end_frame ();
 		}
 		
 		else if (player == 1) {
 			sf2d_start_frame (GFX_TOP, GFX_LEFT);
 			sf2d_draw_texture (tex_torielHouse1, 0, 0);
-			sf2d_draw_texture (tex_friskBack, 180, 80);
+			sf2d_draw_texture (tex_friskBack, player_x, player_y -= 1);
+			player_sprite = 1;
 			sf2d_end_frame ();
 		}
 		
 		else if (player == 2) {
 			sf2d_start_frame (GFX_TOP, GFX_LEFT);
 			sf2d_draw_texture (tex_torielHouse1, 0, 0);
-			sf2d_draw_texture (tex_friskLeft1, 180, 80);
+			sf2d_draw_texture (tex_friskLeft1, player_x -= 1, player_y);
+			player_sprite = 2;
 			sf2d_end_frame ();
 		}
 		
 		else if (player == 3) {
 			sf2d_start_frame (GFX_TOP, GFX_LEFT);
 			sf2d_draw_texture (tex_torielHouse1, 0, 0);
-			sf2d_draw_texture (tex_friskRight1, 180, 80);
+			sf2d_draw_texture (tex_friskRight1, player_x -= 1, player_y);
+			player_sprite = 3;
+			sf2d_end_frame ();
+		}
+		
+		else if (player == 99) {
+			sf2d_start_frame (GFX_TOP, GFX_LEFT);
+			sf2d_draw_texture (tex_torielHouse1, 0, 0);
+			sf2d_draw_texture (tex_friskFace, player_x, player_y += 1);
+			player_sprite = 0;
 			sf2d_end_frame ();
 		}
 		
