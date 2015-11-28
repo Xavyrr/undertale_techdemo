@@ -41,7 +41,13 @@ main.o: c:/3DS/Games/UNDERTALE/source/main.c \
  c:/devkitPro/libctru/include/3ds/sdmc.h \
  c:/devkitPro/libctru/include/3ds/romfs.h \
  c:/devkitPro/libctru/include/sf2d.h c:/devkitPro/libctru/include/sftd.h \
- c:/3DS/Games/UNDERTALE/build/eightbit_ttf.h
+ c:/devkitPro/libctru/include/sfil.h \
+ c:/3DS/Games/UNDERTALE/build/eightbit_ttf.h \
+ c:/3DS/Games/UNDERTALE/build/friskBack_png.h \
+ c:/3DS/Games/UNDERTALE/build/friskFace_png.h \
+ c:/3DS/Games/UNDERTALE/build/friskLeft1_png.h \
+ c:/3DS/Games/UNDERTALE/build/friskRight1_png.h \
+ c:/3DS/Games/UNDERTALE/build/torielHouse1_png.h
 
 c:/devkitPro/libctru/include/3ds.h:
 
@@ -129,4 +135,16 @@ c:/devkitPro/libctru/include/sf2d.h:
 
 c:/devkitPro/libctru/include/sftd.h:
 
+c:/devkitPro/libctru/include/sfil.h:
+
 c:/3DS/Games/UNDERTALE/build/eightbit_ttf.h:
+
+c:/3DS/Games/UNDERTALE/build/friskBack_png.h:
+
+c:/3DS/Games/UNDERTALE/build/friskFace_png.h:
+
+c:/3DS/Games/UNDERTALE/build/friskLeft1_png.h:
+
+c:/3DS/Games/UNDERTALE/build/friskRight1_png.h:
+
+c:/3DS/Games/UNDERTALE/build/torielHouse1_png.h:

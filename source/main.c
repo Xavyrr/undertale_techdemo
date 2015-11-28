@@ -2,47 +2,18 @@
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
+#include <sfil.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
 #include "eightbit_ttf.h"
 
-// Define the existence of images/textures
-extern const struct {
- unsigned int width;
- unsigned int height;
- unsigned int bytes_per_pixel;
- unsigned char pixel_data [];
-} friskFace;
-
-extern const struct {
- unsigned int width;
- unsigned int height;
- unsigned int bytes_per_pixel;
- unsigned char pixel_data [];
-} friskBack;
-
-extern const struct {
- unsigned int width;
- unsigned int height;
- unsigned int bytes_per_pixel;
- unsigned char pixel_data [];
-} friskLeft1;
-
-extern const struct {
- unsigned int width;
- unsigned int height;
- unsigned int bytes_per_pixel;
- unsigned char pixel_data [];
-} friskRight1;
-
-extern const struct {
- unsigned int width;
- unsigned int height;
- unsigned int bytes_per_pixel;
- unsigned char pixel_data [];
-} torielHouse1;
+// Load images
+#include "friskBack_png.h"
+#include "friskFace_png.h"
+#include "friskLeft1_png.h"
+#include "friskRight1_png.h"
+#include "torielHouse1_png.h"
 
 // Sound/Music stuff
 u8* buffer;
@@ -71,16 +42,16 @@ int main (int argc, char **argv) {
 	// Audio service
 	csndInit();
 	
-	// Configuring the right font to use (Roboto Thin), and its proprieties
+	// Configuring the right font to use (8bitoperator), and its proprieties
 	sftd_font *font = sftd_load_font_mem (eightbit_ttf, eightbit_ttf_size);
 	
 	// Configuring graphics in general (images, textures, etc)
 	sf2d_set_clear_color (RGBA8 (0x40, 0x40, 0x40, 0xFF));
-	sf2d_texture *tex_friskFace = sf2d_create_texture_mem_RGBA8(friskFace.pixel_data, friskFace.width, friskFace.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskBack = sf2d_create_texture_mem_RGBA8(friskBack.pixel_data, friskBack.width, friskBack.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskLeft1 = sf2d_create_texture_mem_RGBA8(friskLeft1.pixel_data, friskLeft1.width, friskLeft1.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskRight1 = sf2d_create_texture_mem_RGBA8(friskRight1.pixel_data, friskRight1.width, friskRight1.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
-	sf2d_texture *tex_torielHouse1 = sf2d_create_texture_mem_RGBA8(torielHouse1.pixel_data, torielHouse1.width, torielHouse1.height, TEXFMT_RGBA8, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskFace = sfil_load_PNG_buffer(friskFace_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskBack = sfil_load_PNG_buffer(friskBack_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskLeft1 = sfil_load_PNG_buffer(friskLeft1_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskRight1 = sfil_load_PNG_buffer(friskRight1_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_torielHouse1 = sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
 	
 	// Play music
 	audio_load("sound/music/home.bin");
