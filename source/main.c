@@ -50,6 +50,10 @@ float speed = 0.5;
 int textWidth = 0;
 int textHeight = 0;
 
+int prevTime = 0;
+int currTime = 0;
+float dt = 0;
+
 // Data
 sf2d_texture *curr_tex1;
 sf2d_texture *curr_tex2;
@@ -73,6 +77,8 @@ void render () {
 	sleep (50);
 	sf2d_draw_texture (curr_tex4, (int)player_x, (int)player_y);
 	sleep (50);*/
+	// Draw framerate
+	sftd_draw_textf (font, 10, 10, RGBA8(255, 255, 255, 255), 12, "FPS: %f", sf2d_get_fps());
 	sf2d_end_frame ();
 
 	if (showEasterEggMessage) {
@@ -82,11 +88,21 @@ void render () {
 		sftd_draw_text (font, 10, 200,  RGBA8(255, 255, 255, 255), 20, "   a simple test.");
 		sf2d_end_frame ();
 	};
-		
+	
 	// Swap sf2d framebuffers and wait for VBlank
 	sf2d_swapbuffers ();
 }
 
+// Timer to make sure that the player movement is at the right speed
+void timerStep () {
+	prevTime = currTime;
+	currTime = osGetTime();
+	dt = currTime - prevTime;
+	dt *= 0.2;
+	if (dt < 0) dt = 0; // We don't want dt to be negative.
+}
+
+// Main part of the coding, where everything works (or not)
 int main (int argc, char **argv) {
 
 	// Starting services
@@ -133,14 +149,16 @@ int main (int argc, char **argv) {
 		
 		if (kDown & KEY_START) break;
 		
-		if (kDown & KEY_SELECT) {
+		else if (kDown & KEY_SELECT) {
 			showEasterEggMessage=true;
 		}
 		
-		else if (kHeld & KEY_UP) {
+		timerStep ();
+		
+		if (kHeld & KEY_UP) {
 			player = 1;
 			if (player_y >= room_y1) {
-				player_y -= speed;
+				player_y -= speed * dt;
 			}
 			else {
 				player_y = room_y1 + 1;
@@ -150,7 +168,7 @@ int main (int argc, char **argv) {
 		else if (kHeld & KEY_DOWN) {
 			player = 0;
 			if (player_y <= room_y2) {
-				player_y += speed;
+				player_y += speed * dt;
 			}
 			else {
 				player_y = room_y2 - 1;
@@ -160,7 +178,7 @@ int main (int argc, char **argv) {
 		else if (kHeld & KEY_LEFT) {
 			player = 2;
 			if (player_x >= room_x1) {
-				player_x -= speed;
+				player_x -= speed * dt;
 			}
 			else {
 				player_x = room_x1 + 1;
@@ -170,7 +188,7 @@ int main (int argc, char **argv) {
 		else if (kHeld & KEY_RIGHT) {
 			player = 3;
 			if (player_x <= room_x2) {
-				player_x += speed;
+				player_x += speed * dt;
 			}
 			else {
 				player_x = room_x2 - 1;
