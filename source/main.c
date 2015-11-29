@@ -26,9 +26,11 @@ static void audio_stop(void);
 
 // Variables
 int room = 0;
-int player = 99;
-int player_x = 180;
-int player_y = 80;
+int player = 0;
+float player_x = 180;
+float player_y = 80;
+
+float speed = 0.5;
 //int player_sprite = 0;
 
 int textWidth = 0;
@@ -42,7 +44,7 @@ sf2d_texture *tex_torielHouse1;
 void render(){
 	sf2d_start_frame (GFX_TOP, GFX_LEFT);
 	sf2d_draw_texture (tex_torielHouse1, 0, 0);
-	sf2d_draw_texture (curr_tex, player_x, player_y);
+	sf2d_draw_texture (curr_tex, (int)player_x, (int)player_y);
 	sf2d_end_frame ();
 		
 	// Swap sf2d framebuffers and wait for VBlank
@@ -66,7 +68,7 @@ int main (int argc, char **argv) {
 	sftd_font *font = sftd_load_font_mem (eightbit_ttf, eightbit_ttf_size);
 	
 	// Configuring graphics in general (images, textures, etc)
-	sf2d_set_clear_color (RGBA8 (0x40, 0x40, 0x40, 0xFF));
+	sf2d_set_clear_color (RGBA8 (0x00, 0x00, 0x00, 0xFF));
 	sf2d_texture *tex_friskFace = sfil_load_PNG_buffer(friskFace_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskBack = sfil_load_PNG_buffer(friskBack_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskLeft1 = sfil_load_PNG_buffer(friskLeft1_png, SF2D_PLACE_RAM);
@@ -87,40 +89,35 @@ int main (int argc, char **argv) {
 		
 		if (kDown & KEY_START) break;
 		
-		if (kUp & KEY_SELECT) {
+		if (kDown & KEY_SELECT) {
 			sf2d_start_frame (GFX_BOTTOM, GFX_LEFT);
-			sftd_draw_text(font, 10, 150,  RGBA8(255, 0, 0, 255), 20, "* You IDIOT.");
-			sftd_draw_text(font, 10, 180,  RGBA8(255, 0, 0, 255), 20, "* Nah, this is just");
-			sftd_draw_text(font, 10, 210,  RGBA8(255, 0, 0, 255), 20, "  a simple test.");
+			sftd_draw_text(font, 10, 140,  RGBA8(255, 0, 0, 255), 20, "* You IDIOT.");
+			sftd_draw_text(font, 10, 170,  RGBA8(255, 0, 0, 255), 20, "* Nah, this is just");
+			sftd_draw_text(font, 10, 200,  RGBA8(255, 0, 0, 255), 20, "   a simple test.");
 			sf2d_end_frame ();
 		}
 		
 		else if (kHeld & KEY_UP) {
 			player = 1;
-			player_y -= 1;
+			player_y -= speed;
 		}
 		
 		else if (kHeld & KEY_DOWN) {
 			player = 0;
-			player_y += 1;
+			player_y += speed;
 		}
 		
 		else if (kHeld & KEY_LEFT) {
 			player = 2;
-			player_x -= 1;
+			player_x -= speed;
 		}
 		
 		else if (kHeld & KEY_RIGHT) {
 			player = 3;
-			player_x += 1;
+			player_x += speed;
 		}
 		
-		// Player sprites and movements
-
-		if (player == 99) {
-			curr_tex = tex_friskFace;
-		}
-
+		// Player sprites
 		if (player == 0) {
 			curr_tex = tex_friskFace;
 		}
