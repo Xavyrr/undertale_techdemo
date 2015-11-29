@@ -35,6 +35,7 @@ INCLUDES	:=	include
 APP_TITLE		:= Undertale Tech Demo
 APP_DESCRIPTION	:= Unofficial and quickly made demo
 APP_AUTHOR		:= Toby Fox and lolzvid
+ICON			:= icon.png
 
 #---------------------------------------------------------------------------------
 # options for code generation
