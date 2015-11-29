@@ -28,8 +28,8 @@ static void audio_stop(void);
 int room = 0;
 
 int player = 0;
-float player_x = 180;
-float player_y = 80;
+float player_x = 190;
+float player_y = 160;
 
 float speed = 0.5;
 
@@ -46,15 +46,15 @@ bool showEasterEggMessage = false;
 
 void render () {
 	sf2d_start_frame (GFX_TOP, GFX_LEFT);
-	sf2d_draw_texture (tex_torielHouse1, 0, 0);
+	sf2d_draw_texture (tex_torielHouse1, 40, 0);
 	sf2d_draw_texture (curr_tex, (int)player_x, (int)player_y);
 	sf2d_end_frame ();
 
 	if (showEasterEggMessage) {
 		sf2d_start_frame (GFX_BOTTOM, GFX_LEFT);
 		sftd_draw_text (font, 10, 140,  RGBA8(255, 0, 0, 255), 20, "* You IDIOT.");
-		sftd_draw_text (font, 10, 170,  RGBA8(0, 0, 0, 255), 20, "* Nah, this is just");
-		sftd_draw_text (font, 10, 200,  RGBA8(0, 0, 0, 255), 20, "   a simple test.");
+		sftd_draw_text (font, 10, 170,  RGBA8(255, 255, 255, 255), 20, "* Nah, this is just");
+		sftd_draw_text (font, 10, 200,  RGBA8(255, 255, 255, 255), 20, "   a simple test.");
 		sf2d_end_frame ();
 	};
 		
