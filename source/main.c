@@ -36,9 +36,12 @@ float speed = 0.5;
 int textWidth = 0;
 int textHeight = 0;
 
+//data
 sf2d_texture *curr_tex;
-
 sf2d_texture *tex_torielHouse1;
+sftd_font *font;
+
+bool showEasterEggMessage = false;
 
 
 void render(){
@@ -46,6 +49,14 @@ void render(){
 	sf2d_draw_texture (tex_torielHouse1, 0, 0);
 	sf2d_draw_texture (curr_tex, (int)player_x, (int)player_y);
 	sf2d_end_frame ();
+
+	if(showEasterEggMessage){
+		sf2d_start_frame (GFX_BOTTOM, GFX_LEFT);
+		sftd_draw_text(font, 10, 140,  RGBA8(255, 0, 0, 255), 20, "* You IDIOT.");
+		sftd_draw_text(font, 10, 170,  RGBA8(255, 0, 0, 255), 20, "* Nah, this is just");
+		sftd_draw_text(font, 10, 200,  RGBA8(255, 0, 0, 255), 20, "   a simple test.");
+		sf2d_end_frame ();
+	};
 		
 	// Swap sf2d framebuffers and wait for VBlank
 	sf2d_swapbuffers ();
@@ -65,7 +76,7 @@ int main (int argc, char **argv) {
 	csndInit();
 	
 	// Configuring the right font to use (8bitoperator), and its proprieties
-	sftd_font *font = sftd_load_font_mem (eightbit_ttf, eightbit_ttf_size);
+	font = sftd_load_font_mem (eightbit_ttf, eightbit_ttf_size);
 	
 	// Configuring graphics in general (images, textures, etc)
 	sf2d_set_clear_color (RGBA8 (0x00, 0x00, 0x00, 0xFF));
@@ -90,11 +101,7 @@ int main (int argc, char **argv) {
 		if (kDown & KEY_START) break;
 		
 		if (kDown & KEY_SELECT) {
-			sf2d_start_frame (GFX_BOTTOM, GFX_LEFT);
-			sftd_draw_text(font, 10, 140,  RGBA8(255, 0, 0, 255), 20, "* You IDIOT.");
-			sftd_draw_text(font, 10, 170,  RGBA8(255, 0, 0, 255), 20, "* Nah, this is just");
-			sftd_draw_text(font, 10, 200,  RGBA8(255, 0, 0, 255), 20, "   a simple test.");
-			sf2d_end_frame ();
+			showEasterEggMessage=true;
 		}
 		
 		else if (kHeld & KEY_UP) {
