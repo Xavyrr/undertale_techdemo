@@ -179,8 +179,8 @@ void audio_load (const char *audio) {
 	off_t bytesRead = fread (buffer, 1, size, file);
 	fclose (file);
 	csndPlaySound (8, SOUND_FORMAT_16BIT | SOUND_REPEAT, 44100, 1, 0, buffer, buffer, size);
-	linearFree (buffer);
 }
+
 void audio_stop (void) {
 	csndExecCmds (true);
 	CSND_SetPlayState (0x8, 0);
