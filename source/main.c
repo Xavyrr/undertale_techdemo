@@ -31,6 +31,12 @@ int player = 0;
 float player_x = 190;
 float player_y = 160;
 
+// Room collision
+float room_x1 = 41;
+float room_y1 = 1;
+float room_x2 = 341;
+float room_y2 = 201;
+
 float speed = 0.5;
 
 int textWidth = 0;
@@ -106,22 +112,42 @@ int main (int argc, char **argv) {
 		
 		else if (kHeld & KEY_UP) {
 			player = 1;
-			player_y -= speed;
+			if (player_y >= room_y1) {
+				player_y -= speed;
+			}
+			else {
+				player_y = room_y1 + 1;
+			}
 		}
 		
 		else if (kHeld & KEY_DOWN) {
 			player = 0;
-			player_y += speed;
+			if (player_y <= room_y2) {
+				player_y += speed;
+			}
+			else {
+				player_y = room_y2 - 1;
+			}
 		}
 		
 		else if (kHeld & KEY_LEFT) {
 			player = 2;
-			player_x -= speed;
+			if (player_x >= room_x1) {
+				player_x -= speed;
+			}
+			else {
+				player_x = room_x1 + 1;
+			}
 		}
 		
 		else if (kHeld & KEY_RIGHT) {
 			player = 3;
-			player_x += speed;
+			if (player_x <= room_x2) {
+				player_x += speed;
+			}
+			else {
+				player_x = room_x2 - 1;
+			}
 		}
 		
 		// Player sprites
@@ -145,8 +171,8 @@ int main (int argc, char **argv) {
 		if (room == 0) {
 		
 		}
-
-		render();
+		
+		render ();
 	}
 	
 	// Free images/textures/fonts from memory
