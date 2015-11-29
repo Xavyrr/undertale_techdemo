@@ -11,10 +11,18 @@
 #include "eightbit_ttf.h"
 
 // Load images
-#include "friskBack_png.h"
-#include "friskFace_png.h"
+#include "friskBack1_png.h"
+#include "friskBack2_png.h"
+#include "friskBack3_png.h"
+#include "friskBack4_png.h"
+#include "friskFace1_png.h"
+#include "friskFace2_png.h"
+#include "friskFace3_png.h"
+#include "friskFace4_png.h"
 #include "friskLeft1_png.h"
+#include "friskLeft2_png.h"
 #include "friskRight1_png.h"
+#include "friskRight2_png.h"
 #include "torielHouse1_png.h"
 
 // Sound/Music stuff
@@ -43,7 +51,11 @@ int textWidth = 0;
 int textHeight = 0;
 
 // Data
-sf2d_texture *curr_tex;
+sf2d_texture *curr_tex1;
+sf2d_texture *curr_tex2;
+sf2d_texture *curr_tex3;
+sf2d_texture *curr_tex4;
+sf2d_texture *curr_room;
 sf2d_texture *tex_torielHouse1;
 sftd_font *font;
 
@@ -52,8 +64,15 @@ bool showEasterEggMessage = false;
 
 void render () {
 	sf2d_start_frame (GFX_TOP, GFX_LEFT);
-	sf2d_draw_texture (tex_torielHouse1, 40, 0);
-	sf2d_draw_texture (curr_tex, (int)player_x, (int)player_y);
+	sf2d_draw_texture (curr_room, 40, 0);
+	sf2d_draw_texture (curr_tex1, (int)player_x, (int)player_y);
+	/*sleep (50);
+	sf2d_draw_texture (curr_tex2, (int)player_x, (int)player_y);
+	sleep (50);
+	sf2d_draw_texture (curr_tex3, (int)player_x, (int)player_y);
+	sleep (50);
+	sf2d_draw_texture (curr_tex4, (int)player_x, (int)player_y);
+	sleep (50);*/
 	sf2d_end_frame ();
 
 	if (showEasterEggMessage) {
@@ -86,10 +105,18 @@ int main (int argc, char **argv) {
 	
 	// Configuring graphics in general (images, textures, etc)
 	sf2d_set_clear_color (RGBA8 (0x00, 0x00, 0x00, 0xFF));
-	sf2d_texture *tex_friskFace = sfil_load_PNG_buffer(friskFace_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskBack = sfil_load_PNG_buffer(friskBack_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskFace1 = sfil_load_PNG_buffer(friskFace1_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskFace2 = sfil_load_PNG_buffer(friskFace2_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskFace3 = sfil_load_PNG_buffer(friskFace3_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskFace4 = sfil_load_PNG_buffer(friskFace4_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskBack1 = sfil_load_PNG_buffer(friskBack1_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskBack2 = sfil_load_PNG_buffer(friskBack2_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskBack3 = sfil_load_PNG_buffer(friskBack3_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskBack4 = sfil_load_PNG_buffer(friskBack4_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskLeft1 = sfil_load_PNG_buffer(friskLeft1_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskLeft2 = sfil_load_PNG_buffer(friskLeft2_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskRight1 = sfil_load_PNG_buffer(friskRight1_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskRight2 = sfil_load_PNG_buffer(friskRight2_png, SF2D_PLACE_RAM);
 	tex_torielHouse1 = sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
 	
 	// Play music
@@ -152,32 +179,44 @@ int main (int argc, char **argv) {
 		
 		// Player sprites
 		if (player == 0) {
-			curr_tex = tex_friskFace;
+			curr_tex1 = tex_friskFace1;
+			curr_tex2 = tex_friskFace2;
+			curr_tex3 = tex_friskFace3;
+			curr_tex4 = tex_friskFace4;
 		}
 		
 		else if (player == 1) {
-			curr_tex = tex_friskBack;
+			curr_tex1 = tex_friskBack1;
+			curr_tex2 = tex_friskBack2;
+			curr_tex3 = tex_friskBack3;
+			curr_tex4 = tex_friskBack4;
 		}
 		
 		else if (player == 2) {
-			curr_tex = tex_friskLeft1;
+			curr_tex1 = tex_friskLeft1;
+			curr_tex2 = tex_friskLeft2;
+			curr_tex3 = tex_friskLeft1;
+			curr_tex4 = tex_friskLeft2;
 		}
 		
 		else if (player == 3) {
-			curr_tex = tex_friskRight1;
+			curr_tex1 = tex_friskRight1;
+			curr_tex2 = tex_friskRight2;
+			curr_tex3 = tex_friskRight1;
+			curr_tex4 = tex_friskRight2;
 		}
 		
 		// Localization/rooms
 		if (room == 0) {
-		
+			curr_room = tex_torielHouse1;
 		}
 		
 		render ();
 	}
 	
 	// Free images/textures/fonts from memory
-	sf2d_free_texture (tex_friskFace);
-	sf2d_free_texture (tex_friskBack);
+	sf2d_free_texture (tex_friskFace1);
+	sf2d_free_texture (tex_friskBack1);
 	sf2d_free_texture (tex_friskLeft1);
 	sf2d_free_texture (tex_friskRight1);
 	sf2d_free_texture (tex_torielHouse1);
