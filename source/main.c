@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
+#include <time.h>
 #include "eightbit_ttf.h"
 
 // Load images
@@ -24,7 +26,10 @@ static void audio_stop(void);
 
 // Variables
 int room = 0;
-int player = 0;
+int player = 99;
+int player_x = 180;
+int player_y = 80;
+//int player_sprite = 0;
 
 int textWidth = 0;
 int textHeight = 0;
@@ -37,7 +42,7 @@ sf2d_texture *tex_torielHouse1;
 void render(){
 	sf2d_start_frame (GFX_TOP, GFX_LEFT);
 	sf2d_draw_texture (tex_torielHouse1, 0, 0);
-	sf2d_draw_texture (curr_tex, 180, 80);
+	sf2d_draw_texture (curr_tex, player_x, player_y);
 	sf2d_end_frame ();
 		
 	// Swap sf2d framebuffers and wait for VBlank
@@ -77,27 +82,45 @@ int main (int argc, char **argv) {
 		// Verify button presses
 		hidScanInput ();
 		u32 kDown = hidKeysDown ();
+		u32 kHeld = hidKeysHeld();
+		u32 kUp = hidKeysUp();
 		
 		if (kDown & KEY_START) break;
 		
-		else if (kDown & KEY_UP) {
+		if (kUp & KEY_SELECT) {
+			sf2d_start_frame (GFX_BOTTOM, GFX_LEFT);
+			sftd_draw_text(font, 10, 150,  RGBA8(255, 0, 0, 255), 20, "* You IDIOT.");
+			sftd_draw_text(font, 10, 180,  RGBA8(255, 0, 0, 255), 20, "* Nah, this is just");
+			sftd_draw_text(font, 10, 210,  RGBA8(255, 0, 0, 255), 20, "  a simple test.");
+			sf2d_end_frame ();
+		}
+		
+		else if (kHeld & KEY_UP) {
 			player = 1;
+			player_y -= 1;
 		}
 		
-		else if (kDown & KEY_DOWN) {
+		else if (kHeld & KEY_DOWN) {
 			player = 0;
+			player_y += 1;
 		}
 		
-		else if (kDown & KEY_LEFT) {
+		else if (kHeld & KEY_LEFT) {
 			player = 2;
+			player_x -= 1;
 		}
 		
-		else if (kDown & KEY_RIGHT) {
+		else if (kHeld & KEY_RIGHT) {
 			player = 3;
+			player_x += 1;
 		}
 		
 		// Player sprites and movements
-		// next you'd want to create an xpos and ypos variable, and add/subtract them to move the player around
+
+		if (player == 99) {
+			curr_tex = tex_friskFace;
+		}
+
 		if (player == 0) {
 			curr_tex = tex_friskFace;
 		}
