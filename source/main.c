@@ -29,30 +29,27 @@
 // Sound/Music stuff
 u8* buffer;
 u32 size;
-
 static void audio_load(const char *audio);
 static void audio_stop(void);
 
-// Variables
-int room = 0;
-
+// "int" Variables
+int room = 1;
+int roomEnter = 0;
 int player = 0;
-float player_x = 190;
-float player_y = 160;
-
-// Room collision
-float room_x1 = 77;
-float room_y1 = 60;
-float room_x2 = 305;
-float room_y2 = 188;
-
-float speed = 0.5;
-
+int playerDirection = 0;
 int textWidth = 0;
 int textHeight = 0;
-
 int prevTime = 0;
 int currTime = 0;
+
+// "float" Variables
+float player_x;
+float player_y;
+float room_x1;
+float room_y1;
+float room_x2;
+float room_y2;
+float speed = 0.5;
 float dt = 0;
 
 // Data
@@ -72,7 +69,7 @@ void render () {
 	sf2d_start_frame (GFX_TOP, GFX_LEFT);
 	sf2d_draw_texture (curr_room, 40, 0);
 	sf2d_draw_texture (curr_tex1, (int)player_x, (int)player_y);
-	/*sleep (50);
+	/*sleep (50); // Sleep commands for some reason, don't work at all
 	sf2d_draw_texture (curr_tex2, (int)player_x, (int)player_y);
 	sleep (50);
 	sf2d_draw_texture (curr_tex3, (int)player_x, (int)player_y);
@@ -160,6 +157,7 @@ int main (int argc, char **argv) {
 		
 		if (kHeld & KEY_UP) {
 			player = 1;
+			playerDirection = 1;
 			if (player_y >= room_y1) {
 				player_y -= speed * dt;
 			}
@@ -170,6 +168,7 @@ int main (int argc, char **argv) {
 		
 		else if (kHeld & KEY_DOWN) {
 			player = 0;
+			playerDirection = 0;
 			if (player_y <= room_y2) {
 				player_y += speed * dt;
 			}
@@ -180,6 +179,7 @@ int main (int argc, char **argv) {
 		
 		else if (kHeld & KEY_LEFT) {
 			player = 2;
+			playerDirection = 2;
 			if (player_x >= room_x1) {
 				player_x -= speed * dt;
 			}
@@ -190,6 +190,7 @@ int main (int argc, char **argv) {
 		
 		else if (kHeld & KEY_RIGHT) {
 			player = 3;
+			playerDirection = 3;
 			if (player_x <= room_x2) {
 				player_x += speed * dt;
 			}
@@ -228,8 +229,50 @@ int main (int argc, char **argv) {
 		}
 		
 		// Localization/rooms
-		if (room == 0) {
-			curr_room = tex_torielHouse1;
+		if (room == 1) {
+			if (roomEnter == 0) {
+				curr_room = tex_torielHouse1;
+				player_x = 190;
+				player_y = 160;
+				room_x1 = 77;
+				room_y1 = 60;
+				room_x2 = 305;
+				room_y2 = 188;
+				roomEnter = 255;
+			}
+			
+			if (roomEnter == 1) {
+				curr_room = tex_torielHouse1;
+				player_x = 80;
+				player_y = 160;
+				room_x1 = 77;
+				room_y1 = 60;
+				room_x2 = 305;
+				room_y2 = 188;
+				roomEnter = 255;
+			}
+				
+			if (player_y >= 145 && player_y <= 195 && player_x <= 80 && playerDirection == 2) {
+				room = 2;
+				roomEnter = 0;
+			}
+		}
+		if (room == 2) {
+			if (roomEnter == 0) {
+				curr_room = tex_torielHouse2;
+				player_x = 315;
+				player_y = 160;
+				room_x1 = 60;
+				room_y1 = 69;
+				room_x2 = 320;
+				room_y2 = 190;
+				roomEnter = 255;
+			}
+			
+			if (player_y >= 145 && player_y <= 195 && player_x >= 317 && playerDirection == 3) {
+				room = 1;
+				roomEnter = 1;
+			}
 		}
 		
 		render ();
