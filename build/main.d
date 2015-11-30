@@ -55,7 +55,8 @@ main.o: c:/3DS/Games/UNDERTALE/source/main.c \
  c:/3DS/Games/UNDERTALE/build/friskLeft2_png.h \
  c:/3DS/Games/UNDERTALE/build/friskRight1_png.h \
  c:/3DS/Games/UNDERTALE/build/friskRight2_png.h \
- c:/3DS/Games/UNDERTALE/build/torielHouse1_png.h
+ c:/3DS/Games/UNDERTALE/build/torielHouse1_png.h \
+ c:/3DS/Games/UNDERTALE/build/torielHouse2_png.h
 
 c:/devkitPro/libctru/include/3ds.h:
 
@@ -172,3 +173,5 @@ c:/3DS/Games/UNDERTALE/build/friskRight1_png.h:
 c:/3DS/Games/UNDERTALE/build/friskRight2_png.h:
 
 c:/3DS/Games/UNDERTALE/build/torielHouse1_png.h:
+
+c:/3DS/Games/UNDERTALE/build/torielHouse2_png.h:

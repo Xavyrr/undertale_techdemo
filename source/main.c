@@ -24,6 +24,7 @@
 #include "friskRight1_png.h"
 #include "friskRight2_png.h"
 #include "torielHouse1_png.h"
+#include "torielHouse2_png.h"
 
 // Sound/Music stuff
 u8* buffer;
@@ -42,7 +43,7 @@ float player_y = 160;
 // Room collision
 float room_x1 = 77;
 float room_y1 = 60;
-float room_x2 = 300;
+float room_x2 = 305;
 float room_y2 = 188;
 
 float speed = 0.5;
@@ -61,6 +62,7 @@ sf2d_texture *curr_tex3;
 sf2d_texture *curr_tex4;
 sf2d_texture *curr_room;
 sf2d_texture *tex_torielHouse1;
+sf2d_texture *tex_torielHouse2;
 sftd_font *font;
 
 //Rendering sprites and backgrounds
@@ -134,6 +136,7 @@ int main (int argc, char **argv) {
 	sf2d_texture *tex_friskRight1 = sfil_load_PNG_buffer(friskRight1_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskRight2 = sfil_load_PNG_buffer(friskRight2_png, SF2D_PLACE_RAM);
 	tex_torielHouse1 = sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
+	tex_torielHouse2 = sfil_load_PNG_buffer(torielHouse2_png, SF2D_PLACE_RAM);
 	
 	// Play music
 	audio_load("sound/music/home.bin");
@@ -234,10 +237,20 @@ int main (int argc, char **argv) {
 	
 	// Free images/textures/fonts from memory
 	sf2d_free_texture (tex_friskFace1);
+	sf2d_free_texture (tex_friskFace2);
+	sf2d_free_texture (tex_friskFace3);
+	sf2d_free_texture (tex_friskFace4);
 	sf2d_free_texture (tex_friskBack1);
+	sf2d_free_texture (tex_friskBack2);
+	sf2d_free_texture (tex_friskBack3);
+	sf2d_free_texture (tex_friskBack4);
 	sf2d_free_texture (tex_friskLeft1);
+	sf2d_free_texture (tex_friskLeft2);
 	sf2d_free_texture (tex_friskRight1);
+	sf2d_free_texture (tex_friskRight2);
 	sf2d_free_texture (tex_torielHouse1);
+	sf2d_free_texture (tex_torielHouse2);
+	
 	sftd_free_font (font);
 
 	// Exit services
