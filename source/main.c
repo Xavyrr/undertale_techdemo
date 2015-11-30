@@ -40,10 +40,10 @@ float player_x = 190;
 float player_y = 160;
 
 // Room collision
-float room_x1 = 41;
-float room_y1 = 1;
-float room_x2 = 341;
-float room_y2 = 201;
+float room_x1 = 77;
+float room_y1 = 60;
+float room_x2 = 300;
+float room_y2 = 188;
 
 float speed = 0.5;
 
