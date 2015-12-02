@@ -1,4 +1,5 @@
 // Include libraries
+#include <stdbool.h>
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
@@ -14,15 +15,15 @@
 #include "friskBack1_png.h"
 #include "friskBack2_png.h"
 #include "friskBack3_png.h"
-#include "friskBack4_png.h"
+#include "friskBack0_png.h"
 #include "friskFace1_png.h"
 #include "friskFace2_png.h"
 #include "friskFace3_png.h"
-#include "friskFace4_png.h"
+#include "friskFace0_png.h"
 #include "friskLeft1_png.h"
-#include "friskLeft2_png.h"
+#include "friskLeft0_png.h"
 #include "friskRight1_png.h"
-#include "friskRight2_png.h"
+#include "friskRight0_png.h"
 #include "torielHouse1_png.h"
 #include "torielHouse2_png.h"
 
@@ -36,7 +37,8 @@ static void audio_stop(void);
 int room = 1;
 int roomEnter = 0;
 int player = 0;
-int playerDirection = 0;
+int playerDir = 0; //direction player is facing
+//	0 = right, 1 = up, 2 = left, 3 = down
 int textWidth = 0;
 int textHeight = 0;
 int prevTime = 0;
@@ -49,14 +51,14 @@ float room_x1;
 float room_y1;
 float room_x2;
 float room_y2;
-float speed = 0.5;
+//float speed = 0.5; // replaced with hsp and vsp 
+float hsp = 0; //player horizontal speed
+float vsp = 0; //player vertical speed
 float dt = 0;
+float sprTimer = 0;
 
 // Data
-sf2d_texture *curr_tex1;
-sf2d_texture *curr_tex2;
-sf2d_texture *curr_tex3;
-sf2d_texture *curr_tex4;
+sf2d_texture *curr_tex;
 sf2d_texture *curr_room;
 sf2d_texture *tex_torielHouse1;
 sf2d_texture *tex_torielHouse2;
@@ -68,7 +70,7 @@ bool showEasterEggMessage = false;
 void render () {
 	sf2d_start_frame (GFX_TOP, GFX_LEFT);
 	sf2d_draw_texture (curr_room, 40, 0);
-	sf2d_draw_texture (curr_tex1, (int)player_x, (int)player_y);
+	sf2d_draw_texture (curr_tex, (int)player_x, (int)player_y);
 	/*sleep (50); // Sleep commands for some reason, don't work at all
 	sf2d_draw_texture (curr_tex2, (int)player_x, (int)player_y);
 	sleep (50);
@@ -87,7 +89,11 @@ void render () {
 		sftd_draw_text (font, 10, 200,  RGBA8(255, 255, 255, 255), 20, "   a simple test.");
 		sf2d_end_frame ();
 	};
-	
+
+
+	//sftd_draw_text (font, 10, 20, RGBA8(255, 255, 255, 255), 12, "sprTimer: " + string(sprTimer));
+	//sf2d_end_frame ();
+
 	// Swap sf2d framebuffers and wait for VBlank
 	sf2d_swapbuffers ();
 }
@@ -111,123 +117,177 @@ int main (int argc, char **argv) {
 	srvInit();
 	aptInit();
 	hidInit(NULL);
-	
+
 	// Audio service
 	csndInit();
-	
+
 	// Configuring the right font to use (8bitoperator), and its proprieties
 	font = sftd_load_font_mem (eightbit_ttf, eightbit_ttf_size);
-	
+
 	// Configuring graphics in general (images, textures, etc)
 	sf2d_set_clear_color (RGBA8 (0x00, 0x00, 0x00, 0xFF));
 	sf2d_texture *tex_friskFace1 = sfil_load_PNG_buffer(friskFace1_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskFace2 = sfil_load_PNG_buffer(friskFace2_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskFace3 = sfil_load_PNG_buffer(friskFace3_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskFace4 = sfil_load_PNG_buffer(friskFace4_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskFace0 = sfil_load_PNG_buffer(friskFace0_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskBack1 = sfil_load_PNG_buffer(friskBack1_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskBack2 = sfil_load_PNG_buffer(friskBack2_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskBack3 = sfil_load_PNG_buffer(friskBack3_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskBack4 = sfil_load_PNG_buffer(friskBack4_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskBack0 = sfil_load_PNG_buffer(friskBack0_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskLeft1 = sfil_load_PNG_buffer(friskLeft1_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskLeft2 = sfil_load_PNG_buffer(friskLeft2_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskLeft0 = sfil_load_PNG_buffer(friskLeft0_png, SF2D_PLACE_RAM);
 	sf2d_texture *tex_friskRight1 = sfil_load_PNG_buffer(friskRight1_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskRight2 = sfil_load_PNG_buffer(friskRight2_png, SF2D_PLACE_RAM);
+	sf2d_texture *tex_friskRight0 = sfil_load_PNG_buffer(friskRight0_png, SF2D_PLACE_RAM);
 	tex_torielHouse1 = sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
 	tex_torielHouse2 = sfil_load_PNG_buffer(torielHouse2_png, SF2D_PLACE_RAM);
-	
+
 	// Play music
 	audio_load("sound/music/home.bin");
-	
+
 	// Main loop
 	while (aptMainLoop ()) {
-		
+
 		// Verify button presses
 		hidScanInput ();
 		u32 kDown = hidKeysDown ();
 		u32 kHeld = hidKeysHeld();
 		u32 kUp = hidKeysUp();
-		
+
 		if (kDown & KEY_START) break;
-		
+
 		else if (kDown & KEY_SELECT) {
 			showEasterEggMessage=true;
 		}
-		
+
 		timerStep ();
-		
+
+		if (kDown & KEY_UP) sprTimer = 0;
+		if (kDown & KEY_DOWN) sprTimer = 0;
+		if (kDown & KEY_LEFT) sprTimer = 0;
+		if (kDown & KEY_RIGHT) sprTimer = 0;
+		//Key presses set speed
+		vsp = 0; //reset hsp and vsp just in case...
+		hsp = 0;
 		if (kHeld & KEY_UP) {
-			player = 1;
-			playerDirection = 1;
-			if (player_y >= room_y1) {
-				player_y -= speed * dt;
-			}
-			else {
-				player_y = room_y1 + 1;
+			if (!(kHeld & KEY_DOWN)) {
+				vsp = -.5;
+				playerDir = 1;
 			}
 		}
-		
-		else if (kHeld & KEY_DOWN) {
-			player = 0;
-			playerDirection = 0;
-			if (player_y <= room_y2) {
-				player_y += speed * dt;
-			}
-			else {
-				player_y = room_y2 - 1;
+		if (kHeld & KEY_DOWN) {
+			vsp = .5;
+			playerDir = 3;
+		}
+		if (kHeld & KEY_LEFT) {
+			if (!(kHeld & KEY_RIGHT)) {
+				hsp = -.5;
+				playerDir = 2;
 			}
 		}
-		
-		else if (kHeld & KEY_LEFT) {
-			player = 2;
-			playerDirection = 2;
-			if (player_x >= room_x1) {
-				player_x -= speed * dt;
-			}
-			else {
-				player_x = room_x1 + 1;
-			}
+		if (kHeld & KEY_RIGHT) {
+			hsp = .5;
+			playerDir = 0;
 		}
-		
-		else if (kHeld & KEY_RIGHT) {
-			player = 3;
-			playerDirection = 3;
-			if (player_x <= room_x2) {
-				player_x += speed * dt;
-			}
-			else {
-				player_x = room_x2 - 1;
-			}
+
+		// Collision test BEFORE movement
+		if ((player_x + hsp) >= room_x2) {
+			hsp = 0;
 		}
-		
+		if ((player_x + hsp) <= room_x1) {
+			hsp = 0;
+		}
+		if ((player_y + vsp) >= room_y2) {
+			vsp = 0;
+		}
+		if ((player_y + vsp) <= room_y1) {
+			vsp = 0;
+		}
+
+		// Actual movement calculation
+		player_x += hsp * dt;
+		player_y += vsp * dt;
 		// Player sprites
-		if (player == 0) {
-			curr_tex1 = tex_friskFace1;
-			curr_tex2 = tex_friskFace2;
-			curr_tex3 = tex_friskFace3;
-			curr_tex4 = tex_friskFace4;
+		if (playerDir == 0) {
+			if (hsp == 0) {
+				curr_tex = tex_friskRight0;
+			}
+			else {
+				if (sprTimer == 0) {
+					curr_tex = tex_friskRight0;
+				}
+				if (sprTimer == 1) {
+					curr_tex = tex_friskRight1;
+				}
+				if (sprTimer == 2) {
+					curr_tex = tex_friskRight0;
+				}
+				if (sprTimer == 3) {
+					curr_tex = tex_friskRight1;
+				}
+			}
 		}
-		
-		else if (player == 1) {
-			curr_tex1 = tex_friskBack1;
-			curr_tex2 = tex_friskBack2;
-			curr_tex3 = tex_friskBack3;
-			curr_tex4 = tex_friskBack4;
+		if (playerDir == 1) {
+			if (vsp == 0) {
+				curr_tex = tex_friskBack0;
+			}
+			else {
+				if (sprTimer == 0) {
+					curr_tex = tex_friskBack0;
+				}
+				if (sprTimer == 1) {
+					curr_tex = tex_friskBack1;
+				}
+				if (sprTimer == 2) {
+					curr_tex = tex_friskBack2;
+				}
+				if (sprTimer == 3) {
+					curr_tex = tex_friskBack3;
+				}
+			}
 		}
-		
-		else if (player == 2) {
-			curr_tex1 = tex_friskLeft1;
-			curr_tex2 = tex_friskLeft2;
-			curr_tex3 = tex_friskLeft1;
-			curr_tex4 = tex_friskLeft2;
+		if (playerDir == 2) {
+			if (hsp == 0) {
+				curr_tex = tex_friskLeft0;
+			}
+			else {
+				if (sprTimer == 0) {
+					curr_tex = tex_friskLeft0;
+				}
+				if (sprTimer == 1) {
+					curr_tex = tex_friskLeft1;
+				}
+				if (sprTimer == 2) {
+					curr_tex = tex_friskLeft0;
+				}
+				if (sprTimer == 3) {
+					curr_tex = tex_friskLeft1;
+				}
+			}
 		}
-		
-		else if (player == 3) {
-			curr_tex1 = tex_friskRight1;
-			curr_tex2 = tex_friskRight2;
-			curr_tex3 = tex_friskRight1;
-			curr_tex4 = tex_friskRight2;
+		if (playerDir == 3) {
+			if (vsp == 0) {
+				curr_tex = tex_friskFace0;
+			}
+			else {
+				if (sprTimer == 0) {
+					curr_tex = tex_friskFace0;
+				}
+				if (sprTimer == 1) {
+					curr_tex = tex_friskFace1;
+				}
+				if (sprTimer == 2) {
+					curr_tex = tex_friskFace2;
+				}
+				if (sprTimer == 3) {
+					curr_tex = tex_friskFace3;
+				}
+			}
 		}
-		
+		//Sprite animation timer
+		sprTimer += (10 * dt);
+		if (sprTimer >= 4) {
+			sprTimer = 0;
+		}
 		// Localization/rooms
 		if (room == 1) {
 			if (roomEnter == 0) {
@@ -240,7 +300,7 @@ int main (int argc, char **argv) {
 				room_y2 = 188;
 				roomEnter = 255;
 			}
-			
+
 			if (roomEnter == 1) {
 				curr_room = tex_torielHouse1;
 				player_x = 80;
@@ -251,8 +311,8 @@ int main (int argc, char **argv) {
 				room_y2 = 188;
 				roomEnter = 255;
 			}
-				
-			if (player_y >= 145 && player_y <= 195 && player_x <= 80 && playerDirection == 2) {
+
+			if (player_y >= 145 && player_y <= 195 && player_x <= 80 && playerDir == 2) { // this needs work!
 				room = 2;
 				roomEnter = 0;
 			}
@@ -268,32 +328,32 @@ int main (int argc, char **argv) {
 				room_y2 = 190;
 				roomEnter = 255;
 			}
-			
-			if (player_y >= 145 && player_y <= 195 && player_x >= 317 && playerDirection == 3) {
+
+			if (player_y >= 145 && player_y <= 195 && player_x >= 317 && playerDir == 0) { // this needs work!
 				room = 1;
 				roomEnter = 1;
 			}
 		}
-		
+
 		render ();
 	}
-	
+
 	// Free images/textures/fonts from memory
 	sf2d_free_texture (tex_friskFace1);
 	sf2d_free_texture (tex_friskFace2);
 	sf2d_free_texture (tex_friskFace3);
-	sf2d_free_texture (tex_friskFace4);
+	sf2d_free_texture (tex_friskFace0);
 	sf2d_free_texture (tex_friskBack1);
 	sf2d_free_texture (tex_friskBack2);
 	sf2d_free_texture (tex_friskBack3);
-	sf2d_free_texture (tex_friskBack4);
+	sf2d_free_texture (tex_friskBack0);
 	sf2d_free_texture (tex_friskLeft1);
-	sf2d_free_texture (tex_friskLeft2);
+	sf2d_free_texture (tex_friskLeft0);
 	sf2d_free_texture (tex_friskRight1);
-	sf2d_free_texture (tex_friskRight2);
+	sf2d_free_texture (tex_friskRight0);
 	sf2d_free_texture (tex_torielHouse1);
 	sf2d_free_texture (tex_torielHouse2);
-	
+
 	sftd_free_font (font);
 
 	// Exit services

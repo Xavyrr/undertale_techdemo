@@ -1,4 +1,5 @@
-main.o: c:/3DS/Games/UNDERTALE/source/main.c \
+main.o: \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/source/main.c \
  c:/devkitPro/libctru/include/3ds.h \
  c:/devkitPro/libctru/include/3ds/types.h \
  c:/devkitPro/libctru/include/3ds/svc.h \
@@ -42,21 +43,21 @@ main.o: c:/3DS/Games/UNDERTALE/source/main.c \
  c:/devkitPro/libctru/include/3ds/romfs.h \
  c:/devkitPro/libctru/include/sf2d.h c:/devkitPro/libctru/include/sftd.h \
  c:/devkitPro/libctru/include/sfil.h \
- c:/3DS/Games/UNDERTALE/build/eightbit_ttf.h \
- c:/3DS/Games/UNDERTALE/build/friskBack1_png.h \
- c:/3DS/Games/UNDERTALE/build/friskBack2_png.h \
- c:/3DS/Games/UNDERTALE/build/friskBack3_png.h \
- c:/3DS/Games/UNDERTALE/build/friskBack4_png.h \
- c:/3DS/Games/UNDERTALE/build/friskFace1_png.h \
- c:/3DS/Games/UNDERTALE/build/friskFace2_png.h \
- c:/3DS/Games/UNDERTALE/build/friskFace3_png.h \
- c:/3DS/Games/UNDERTALE/build/friskFace4_png.h \
- c:/3DS/Games/UNDERTALE/build/friskLeft1_png.h \
- c:/3DS/Games/UNDERTALE/build/friskLeft2_png.h \
- c:/3DS/Games/UNDERTALE/build/friskRight1_png.h \
- c:/3DS/Games/UNDERTALE/build/friskRight2_png.h \
- c:/3DS/Games/UNDERTALE/build/torielHouse1_png.h \
- c:/3DS/Games/UNDERTALE/build/torielHouse2_png.h
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/eightbit_ttf.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskBack1_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskBack2_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskBack3_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskBack0_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskFace1_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskFace2_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskFace3_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskFace0_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskLeft1_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskLeft0_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskRight1_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskRight0_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/torielHouse1_png.h \
+ c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/torielHouse2_png.h
 
 c:/devkitPro/libctru/include/3ds.h:
 
@@ -146,32 +147,32 @@ c:/devkitPro/libctru/include/sftd.h:
 
 c:/devkitPro/libctru/include/sfil.h:
 
-c:/3DS/Games/UNDERTALE/build/eightbit_ttf.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/eightbit_ttf.h:
 
-c:/3DS/Games/UNDERTALE/build/friskBack1_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskBack1_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskBack2_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskBack2_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskBack3_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskBack3_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskBack4_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskBack0_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskFace1_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskFace1_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskFace2_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskFace2_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskFace3_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskFace3_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskFace4_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskFace0_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskLeft1_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskLeft1_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskLeft2_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskLeft0_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskRight1_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskRight1_png.h:
 
-c:/3DS/Games/UNDERTALE/build/friskRight2_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/friskRight0_png.h:
 
-c:/3DS/Games/UNDERTALE/build/torielHouse1_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/torielHouse1_png.h:
 
-c:/3DS/Games/UNDERTALE/build/torielHouse2_png.h:
+c:/Users/Xavyrr/OneDrive/Public/Homebrew/undertale_techdemo/build/torielHouse2_png.h:
