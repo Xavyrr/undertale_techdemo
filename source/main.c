@@ -79,7 +79,9 @@ void render () {
 	sf2d_draw_texture (curr_tex4, (int)player_x, (int)player_y);
 	sleep (50);*/
 	// Draw framerate
-	sftd_draw_textf (font, 10, 10, RGBA8(255, 255, 255, 255), 12, "FPS: %f", sf2d_get_fps());
+	sftd_draw_textf (font, 10, 10, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
+	sftd_draw_textf (font, 10, 30, RGBA8(255, 0, 0, 255), 12, "Player Dir.: %f", playerDir);
+	sftd_draw_textf (font, 10, 50, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
 	sf2d_end_frame ();
 
 	if (showEasterEggMessage) {
