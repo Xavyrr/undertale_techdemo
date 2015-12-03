@@ -51,11 +51,11 @@ float room_x1;
 float room_y1;
 float room_x2;
 float room_y2;
-//float speed = 0.5; // replaced with hsp and vsp 
+//float speed = 0.5; // replaced with hsp and vsp
 float hsp = 0; //player horizontal speed
 float vsp = 0; //player vertical speed
 float dt = 0;
-float sprTimer = 0;
+double sprTimer = 0;
 
 // Data
 sf2d_texture *curr_tex;
@@ -78,21 +78,18 @@ void render () {
 	sleep (50);
 	sf2d_draw_texture (curr_tex4, (int)player_x, (int)player_y);
 	sleep (50);*/
-	// Draw framerate
-	sftd_draw_textf (font, 10, 10, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
-	sftd_draw_textf (font, 10, 30, RGBA8(255, 0, 0, 255), 12, "Player Dir.: %f", playerDir);
-	sftd_draw_textf (font, 10, 50, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
 	sf2d_end_frame ();
 
 	if (showEasterEggMessage) {
 		sf2d_start_frame (GFX_BOTTOM, GFX_LEFT);
-		sftd_draw_text (font, 10, 140,  RGBA8(255, 0, 0, 255), 20, "* You IDIOT.");
-		sftd_draw_text (font, 10, 170,  RGBA8(255, 255, 255, 255), 20, "* Nah, this is just");
-		sftd_draw_text (font, 10, 200,  RGBA8(255, 255, 255, 255), 20, "   a simple test.");
+		sftd_draw_text (font, 10, 140,  RGBA8(255, 0, 0, 255), 16, "* You IDIOT.");
+		sftd_draw_text (font, 10, 170,  RGBA8(255, 255, 255, 255), 16, "* Nah, this is just");
+		sftd_draw_text (font, 10, 200,  RGBA8(255, 255, 255, 255), 16, "   a simple test.");
+		sftd_draw_textf (font, 10, 10, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
+		sftd_draw_textf (font, 10, 30, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
 		sf2d_end_frame ();
 	};
-
-
+	
 	//sftd_draw_text (font, 10, 20, RGBA8(255, 255, 255, 255), 12, "sprTimer: " + string(sprTimer));
 	//sf2d_end_frame ();
 
@@ -105,7 +102,7 @@ void timerStep () {
 	prevTime = currTime;
 	currTime = osGetTime();
 	dt = currTime - prevTime;
-	dt *= 0.2;
+	dt *= 0.15;
 	if (dt < 0) dt = 0; // We don't want dt to be negative.
 }
 
@@ -190,7 +187,16 @@ int main (int argc, char **argv) {
 			hsp = .5;
 			playerDir = 0;
 		}
-
+		//diagonal speed fix
+		//iirc Undertale doesn't have diagonal movement,
+		//so I might remove this later and change the
+		//movement code to reflect that.
+		if (vsp != 0) {
+				if (hsp != 0) {
+					vsp *= .7;
+					hsp *= .7;
+				}
+		}
 		// Collision test BEFORE movement
 		if ((player_x + hsp) >= room_x2) {
 			hsp = 0;
@@ -214,16 +220,16 @@ int main (int argc, char **argv) {
 				curr_tex = tex_friskRight0;
 			}
 			else {
-				if (sprTimer == 0) {
+				if (sprTimer >= 0) {
 					curr_tex = tex_friskRight0;
 				}
-				if (sprTimer == 1) {
+				if (sprTimer >= 1) {
 					curr_tex = tex_friskRight1;
 				}
-				if (sprTimer == 2) {
+				if (sprTimer >= 2) {
 					curr_tex = tex_friskRight0;
 				}
-				if (sprTimer == 3) {
+				if (sprTimer >= 3) {
 					curr_tex = tex_friskRight1;
 				}
 			}
@@ -233,16 +239,16 @@ int main (int argc, char **argv) {
 				curr_tex = tex_friskBack0;
 			}
 			else {
-				if (sprTimer == 0) {
+				if (sprTimer >= 0) {
 					curr_tex = tex_friskBack0;
 				}
-				if (sprTimer == 1) {
+				if (sprTimer >= 1) {
 					curr_tex = tex_friskBack1;
 				}
-				if (sprTimer == 2) {
+				if (sprTimer >= 2) {
 					curr_tex = tex_friskBack2;
 				}
-				if (sprTimer == 3) {
+				if (sprTimer >= 3) {
 					curr_tex = tex_friskBack3;
 				}
 			}
@@ -252,16 +258,16 @@ int main (int argc, char **argv) {
 				curr_tex = tex_friskLeft0;
 			}
 			else {
-				if (sprTimer == 0) {
+				if (sprTimer >= 0) {
 					curr_tex = tex_friskLeft0;
 				}
-				if (sprTimer == 1) {
+				if (sprTimer >= 1) {
 					curr_tex = tex_friskLeft1;
 				}
-				if (sprTimer == 2) {
+				if (sprTimer >= 2) {
 					curr_tex = tex_friskLeft0;
 				}
-				if (sprTimer == 3) {
+				if (sprTimer >= 3) {
 					curr_tex = tex_friskLeft1;
 				}
 			}
@@ -271,22 +277,22 @@ int main (int argc, char **argv) {
 				curr_tex = tex_friskFace0;
 			}
 			else {
-				if (sprTimer == 0) {
+				if (sprTimer >= 0) {
 					curr_tex = tex_friskFace0;
 				}
-				if (sprTimer == 1) {
+				if (sprTimer >= 1) {
 					curr_tex = tex_friskFace1;
 				}
-				if (sprTimer == 2) {
+				if (sprTimer >= 2) {
 					curr_tex = tex_friskFace2;
 				}
-				if (sprTimer == 3) {
+				if (sprTimer >= 3) {
 					curr_tex = tex_friskFace3;
 				}
 			}
 		}
 		//Sprite animation timer
-		sprTimer += (10 * dt);
+		sprTimer += (.03 * dt);
 		if (sprTimer >= 4) {
 			sprTimer = 0;
 		}

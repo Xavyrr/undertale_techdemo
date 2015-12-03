@@ -34,7 +34,7 @@ INCLUDES	:=	include
 
 APP_TITLE		:= Undertale Tech Demo
 APP_DESCRIPTION	:= Unofficial and quickly made demo
-APP_AUTHOR		:= Toby Fox and lolzvid
+APP_AUTHOR		:= Toby Fox and FALLEN TEAM
 ICON			:= icon.png
 
 #---------------------------------------------------------------------------------
