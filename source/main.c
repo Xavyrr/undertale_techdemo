@@ -27,6 +27,9 @@
 #include "torielHouse1_png.h"
 #include "torielHouse2_png.h"
 
+
+
+
 // Sound/Music stuff
 u8* buffer;
 u32 size;
@@ -64,20 +67,66 @@ sf2d_texture *tex_torielHouse1;
 sf2d_texture *tex_torielHouse2;
 sftd_font *font;
 
+sf2d_texture* tex_arr_friskWalk [4][4]; //multidimensional array to store all textures
+
+const u8* friskFilenames [4][4]= { //multidimensional array to store all the filenames
+{friskRight0_png,friskRight1_png,friskRight0_png,friskRight1_png}, //order is right->up->left->down like the rest of the program
+{friskFace0_png,friskFace1_png,friskFace2_png,friskFace3_png,},
+{friskLeft0_png,friskLeft1_png,friskLeft0_png,friskLeft1_png},
+{friskBack0_png,friskBack1_png,friskBack2_png,friskBack3_png}
+};
+
+const int FRISK_RIGHT = 0;
+const int FRISK_FORWARD = 1;
+const int FRISK_LEFT = 2;
+const int FRISK_BACK = 3;
+
 //Rendering sprites and backgrounds
 bool showEasterEggMessage = false;
+
+
+void init(){
+
+	// Starting services
+	sf2d_init ();
+	sf2d_set_vblank_wait(0);
+	sftd_init ();
+	srvInit();
+	aptInit();
+	hidInit(NULL);
+
+	// Audio service
+	csndInit();
+
+	// Configuring the right font to use (8bitoperator), and its proprieties
+	font = sftd_load_font_mem (eightbit_ttf, eightbit_ttf_size);
+
+	// Configuring graphics in general (images, textures, etc)
+	sf2d_set_clear_color (RGBA8 (0x00, 0x00, 0x00, 0xFF));
+	tex_torielHouse1 = sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
+	tex_torielHouse2 = sfil_load_PNG_buffer(torielHouse2_png, SF2D_PLACE_RAM);
+
+	// Load Frisk textures
+	// loop over every element in tex_arr_friskWalk and load the PNG buffer
+	// for some reason here you have to declare the loop variables before the loop
+	int i;
+	int j;
+
+	for (i=0;i<4;i++){ 
+		for (j=0;j<4;j++){
+			tex_arr_friskWalk[i][j] = sfil_load_PNG_buffer(friskFilenames[i][j], SF2D_PLACE_RAM);
+		}
+	}
+
+
+	// Play music
+	audio_load("sound/music/home.bin");
+}
 
 void render () {
 	sf2d_start_frame (GFX_TOP, GFX_LEFT);
 	sf2d_draw_texture (curr_room, 40, 0);
 	sf2d_draw_texture (curr_tex, (int)player_x, (int)player_y);
-	/*sleep (50); // Sleep commands for some reason, don't work at all
-	sf2d_draw_texture (curr_tex2, (int)player_x, (int)player_y);
-	sleep (50);
-	sf2d_draw_texture (curr_tex3, (int)player_x, (int)player_y);
-	sleep (50);
-	sf2d_draw_texture (curr_tex4, (int)player_x, (int)player_y);
-	sleep (50);*/
 	sf2d_end_frame ();
 
 	if (showEasterEggMessage) {
@@ -109,39 +158,7 @@ void timerStep () {
 // Main part of the coding, where everything works (or not)
 int main (int argc, char **argv) {
 
-	// Starting services
-	sf2d_init ();
-	sf2d_set_vblank_wait(0);
-	sftd_init ();
-	srvInit();
-	aptInit();
-	hidInit(NULL);
-
-	// Audio service
-	csndInit();
-
-	// Configuring the right font to use (8bitoperator), and its proprieties
-	font = sftd_load_font_mem (eightbit_ttf, eightbit_ttf_size);
-
-	// Configuring graphics in general (images, textures, etc)
-	sf2d_set_clear_color (RGBA8 (0x00, 0x00, 0x00, 0xFF));
-	sf2d_texture *tex_friskFace1 = sfil_load_PNG_buffer(friskFace1_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskFace2 = sfil_load_PNG_buffer(friskFace2_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskFace3 = sfil_load_PNG_buffer(friskFace3_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskFace0 = sfil_load_PNG_buffer(friskFace0_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskBack1 = sfil_load_PNG_buffer(friskBack1_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskBack2 = sfil_load_PNG_buffer(friskBack2_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskBack3 = sfil_load_PNG_buffer(friskBack3_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskBack0 = sfil_load_PNG_buffer(friskBack0_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskLeft1 = sfil_load_PNG_buffer(friskLeft1_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskLeft0 = sfil_load_PNG_buffer(friskLeft0_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskRight1 = sfil_load_PNG_buffer(friskRight1_png, SF2D_PLACE_RAM);
-	sf2d_texture *tex_friskRight0 = sfil_load_PNG_buffer(friskRight0_png, SF2D_PLACE_RAM);
-	tex_torielHouse1 = sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
-	tex_torielHouse2 = sfil_load_PNG_buffer(torielHouse2_png, SF2D_PLACE_RAM);
-
-	// Play music
-	audio_load("sound/music/home.bin");
+	init();
 
 	// Main loop
 	while (aptMainLoop ()) {
@@ -160,32 +177,30 @@ int main (int argc, char **argv) {
 
 		timerStep ();
 
-		if (kDown & KEY_UP) sprTimer = 0;
-		if (kDown & KEY_DOWN) sprTimer = 0;
-		if (kDown & KEY_LEFT) sprTimer = 0;
-		if (kDown & KEY_RIGHT) sprTimer = 0;
+		if (kDown & KEY_UP || kDown & KEY_DOWN || kDown & KEY_LEFT || kDown & KEY_RIGHT) sprTimer = 0;
+
 		//Key presses set speed
 		vsp = 0; //reset hsp and vsp just in case...
 		hsp = 0;
 		if (kHeld & KEY_UP) {
 			if (!(kHeld & KEY_DOWN)) {
 				vsp = -.5;
-				playerDir = 1;
+				playerDir = FRISK_BACK;
 			}
 		}
 		if (kHeld & KEY_DOWN) {
 			vsp = .5;
-			playerDir = 3;
+			playerDir = FRISK_FORWARD;
 		}
 		if (kHeld & KEY_LEFT) {
 			if (!(kHeld & KEY_RIGHT)) {
 				hsp = -.5;
-				playerDir = 2;
+				playerDir = FRISK_LEFT;
 			}
 		}
 		if (kHeld & KEY_RIGHT) {
 			hsp = .5;
-			playerDir = 0;
+			playerDir = FRISK_RIGHT;
 		}
 		//diagonal speed fix
 		//iirc Undertale doesn't have diagonal movement,
@@ -214,87 +229,19 @@ int main (int argc, char **argv) {
 		// Actual movement calculation
 		player_x += hsp * dt;
 		player_y += vsp * dt;
+
 		// Player sprites
-		if (playerDir == 0) {
-			if (hsp == 0) {
-				curr_tex = tex_friskRight0;
-			}
-			else {
-				if (sprTimer >= 0) {
-					curr_tex = tex_friskRight0;
-				}
-				if (sprTimer >= 1) {
-					curr_tex = tex_friskRight1;
-				}
-				if (sprTimer >= 2) {
-					curr_tex = tex_friskRight0;
-				}
-				if (sprTimer >= 3) {
-					curr_tex = tex_friskRight1;
-				}
-			}
+		if (hsp == 0) {
+			curr_tex = tex_arr_friskWalk[playerDir][0];
 		}
-		if (playerDir == 1) {
-			if (vsp == 0) {
-				curr_tex = tex_friskBack0;
-			}
-			else {
-				if (sprTimer >= 0) {
-					curr_tex = tex_friskBack0;
-				}
-				if (sprTimer >= 1) {
-					curr_tex = tex_friskBack1;
-				}
-				if (sprTimer >= 2) {
-					curr_tex = tex_friskBack2;
-				}
-				if (sprTimer >= 3) {
-					curr_tex = tex_friskBack3;
-				}
-			}
+		else {
+			curr_tex = tex_arr_friskWalk[playerDir][(int)floor(sprTimer)];
 		}
-		if (playerDir == 2) {
-			if (hsp == 0) {
-				curr_tex = tex_friskLeft0;
-			}
-			else {
-				if (sprTimer >= 0) {
-					curr_tex = tex_friskLeft0;
-				}
-				if (sprTimer >= 1) {
-					curr_tex = tex_friskLeft1;
-				}
-				if (sprTimer >= 2) {
-					curr_tex = tex_friskLeft0;
-				}
-				if (sprTimer >= 3) {
-					curr_tex = tex_friskLeft1;
-				}
-			}
-		}
-		if (playerDir == 3) {
-			if (vsp == 0) {
-				curr_tex = tex_friskFace0;
-			}
-			else {
-				if (sprTimer >= 0) {
-					curr_tex = tex_friskFace0;
-				}
-				if (sprTimer >= 1) {
-					curr_tex = tex_friskFace1;
-				}
-				if (sprTimer >= 2) {
-					curr_tex = tex_friskFace2;
-				}
-				if (sprTimer >= 3) {
-					curr_tex = tex_friskFace3;
-				}
-			}
-		}
+
 		//Sprite animation timer
 		sprTimer += (.03 * dt);
-		if (sprTimer >= 4) {
-			sprTimer = 0;
+		while(sprTimer >= 4) {
+			sprTimer -= 4;
 		}
 		// Localization/rooms
 		if (room == 1) {
@@ -347,18 +294,13 @@ int main (int argc, char **argv) {
 	}
 
 	// Free images/textures/fonts from memory
-	sf2d_free_texture (tex_friskFace1);
-	sf2d_free_texture (tex_friskFace2);
-	sf2d_free_texture (tex_friskFace3);
-	sf2d_free_texture (tex_friskFace0);
-	sf2d_free_texture (tex_friskBack1);
-	sf2d_free_texture (tex_friskBack2);
-	sf2d_free_texture (tex_friskBack3);
-	sf2d_free_texture (tex_friskBack0);
-	sf2d_free_texture (tex_friskLeft1);
-	sf2d_free_texture (tex_friskLeft0);
-	sf2d_free_texture (tex_friskRight1);
-	sf2d_free_texture (tex_friskRight0);
+	int i,j;
+	for(i=0;i<4;i++){ 
+		for(j=0;j<4;j++){
+			sf2d_free_texture(tex_arr_friskWalk[i][j]);
+		}
+	}
+
 	sf2d_free_texture (tex_torielHouse1);
 	sf2d_free_texture (tex_torielHouse2);
 
