@@ -85,48 +85,7 @@ const int FRISK_BACK = 3;
 bool showEasterEggMessage = false;
 
 
-void render () {
-	sf2d_start_frame (GFX_TOP, GFX_LEFT);
-	sf2d_draw_texture (curr_room, 40, 0);
-	sf2d_draw_texture (curr_tex, (int)player_x, (int)player_y);
-	/*sleep (50); // Sleep commands for some reason, don't work at all
-	sf2d_draw_texture (curr_tex2, (int)player_x, (int)player_y);
-	sleep (50);
-	sf2d_draw_texture (curr_tex3, (int)player_x, (int)player_y);
-	sleep (50);
-	sf2d_draw_texture (curr_tex4, (int)player_x, (int)player_y);
-	sleep (50);*/
-	sf2d_end_frame ();
-
-	if (showEasterEggMessage) {
-		sf2d_start_frame (GFX_BOTTOM, GFX_LEFT);
-		sftd_draw_text (font, 10, 140,  RGBA8(255, 0, 0, 255), 16, "* You IDIOT.");
-		sftd_draw_text (font, 10, 170,  RGBA8(255, 255, 255, 255), 16, "* Nah, this is just");
-		sftd_draw_text (font, 10, 200,  RGBA8(255, 255, 255, 255), 16, "   a simple test.");
-		sftd_draw_textf (font, 10, 10, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
-		sftd_draw_textf (font, 10, 30, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
-		sf2d_end_frame ();
-	};
-	
-	//sftd_draw_text (font, 10, 20, RGBA8(255, 255, 255, 255), 12, "sprTimer: " + string(sprTimer));
-	//sf2d_end_frame ();
-
-	// Swap sf2d framebuffers and wait for VBlank
-	sf2d_swapbuffers ();
-}
-
-// Timer to make sure that the player movement is at the right speed
-void timerStep () {
-	prevTime = currTime;
-	currTime = osGetTime();
-	dt = currTime - prevTime;
-	dt *= 0.15;
-	if (dt < 0) dt = 0; // We don't want dt to be negative.
-}
-
-// Main part of the coding, where everything works (or not)
-int main (int argc, char **argv) {
-
+void init(){
 
 	// Starting services
 	sf2d_init ();
@@ -162,6 +121,44 @@ int main (int argc, char **argv) {
 
 	// Play music
 	audio_load("sound/music/home.bin");
+}
+
+void render () {
+	sf2d_start_frame (GFX_TOP, GFX_LEFT);
+	sf2d_draw_texture (curr_room, 40, 0);
+	sf2d_draw_texture (curr_tex, (int)player_x, (int)player_y);
+	sf2d_end_frame ();
+
+	if (showEasterEggMessage) {
+		sf2d_start_frame (GFX_BOTTOM, GFX_LEFT);
+		sftd_draw_text (font, 10, 140,  RGBA8(255, 0, 0, 255), 16, "* You IDIOT.");
+		sftd_draw_text (font, 10, 170,  RGBA8(255, 255, 255, 255), 16, "* Nah, this is just");
+		sftd_draw_text (font, 10, 200,  RGBA8(255, 255, 255, 255), 16, "   a simple test.");
+		sftd_draw_textf (font, 10, 10, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
+		sftd_draw_textf (font, 10, 30, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
+		sf2d_end_frame ();
+	};
+	
+	//sftd_draw_text (font, 10, 20, RGBA8(255, 255, 255, 255), 12, "sprTimer: " + string(sprTimer));
+	//sf2d_end_frame ();
+
+	// Swap sf2d framebuffers and wait for VBlank
+	sf2d_swapbuffers ();
+}
+
+// Timer to make sure that the player movement is at the right speed
+void timerStep () {
+	prevTime = currTime;
+	currTime = osGetTime();
+	dt = currTime - prevTime;
+	dt *= 0.15;
+	if (dt < 0) dt = 0; // We don't want dt to be negative.
+}
+
+// Main part of the coding, where everything works (or not)
+int main (int argc, char **argv) {
+
+	init();
 
 	// Main loop
 	while (aptMainLoop ()) {
