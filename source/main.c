@@ -185,22 +185,22 @@ int main (int argc, char **argv) {
 		if (kHeld & KEY_UP) {
 			if (!(kHeld & KEY_DOWN)) {
 				vsp = -.5;
-				playerDir = 1;
+				playerDir = FRISK_BACK;
 			}
 		}
 		if (kHeld & KEY_DOWN) {
 			vsp = .5;
-			playerDir = 3;
+			playerDir = FRISK_FORWARD;
 		}
 		if (kHeld & KEY_LEFT) {
 			if (!(kHeld & KEY_RIGHT)) {
 				hsp = -.5;
-				playerDir = 2;
+				playerDir = FRISK_LEFT;
 			}
 		}
 		if (kHeld & KEY_RIGHT) {
 			hsp = .5;
-			playerDir = 0;
+			playerDir = FRISK_RIGHT;
 		}
 		//diagonal speed fix
 		//iirc Undertale doesn't have diagonal movement,
@@ -229,39 +229,15 @@ int main (int argc, char **argv) {
 		// Actual movement calculation
 		player_x += hsp * dt;
 		player_y += vsp * dt;
+
 		// Player sprites
-		if (playerDir == 0) {
-			if (hsp == 0) {
-				curr_tex = tex_arr_friskWalk[FRISK_RIGHT][0];
-			}
-			else {
-				curr_tex = tex_arr_friskWalk[FRISK_RIGHT][(int)floor(sprTimer)];
-			}
+		if (hsp == 0) {
+			curr_tex = tex_arr_friskWalk[playerDir][0];
 		}
-		if (playerDir == 1) {
-			if (vsp == 0) {
-				curr_tex = tex_arr_friskWalk[FRISK_BACK][0];
-			}
-			else {
-				curr_tex = tex_arr_friskWalk[FRISK_BACK][(int)floor(sprTimer)];
-			}
+		else {
+			curr_tex = tex_arr_friskWalk[playerDir][(int)floor(sprTimer)];
 		}
-		if (playerDir == 2) {
-			if (hsp == 0) {
-				curr_tex = tex_arr_friskWalk[FRISK_LEFT][0];
-			}
-			else {
-				curr_tex = tex_arr_friskWalk[FRISK_LEFT][(int)floor(sprTimer)];
-			}
-		}
-		if (playerDir == 3) {
-			if (vsp == 0) {
-				curr_tex = tex_arr_friskWalk[FRISK_FORWARD][0];
-			}
-			else {
-				curr_tex = tex_arr_friskWalk[FRISK_FORWARD][(int)floor(sprTimer)];
-			}
-		}
+
 		//Sprite animation timer
 		sprTimer += (.03 * dt);
 		while(sprTimer >= 4) {
@@ -318,7 +294,7 @@ int main (int argc, char **argv) {
 	}
 
 	// Free images/textures/fonts from memory
-	//int i,j;
+	int i,j;
 	for(i=0;i<4;i++){ 
 		for(j=0;j<4;j++){
 			sf2d_free_texture(tex_arr_friskWalk[i][j]);
