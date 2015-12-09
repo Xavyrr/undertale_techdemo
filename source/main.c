@@ -1,25 +1,29 @@
 // Include libraries
+#include <stdbool.h>
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
 #include <sfil.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include "eightbit_ttf.h"
 
 // Load images
+#include "friskBack0_png.h"
 #include "friskBack1_png.h"
 #include "friskBack2_png.h"
 #include "friskBack3_png.h"
-#include "friskBack0_png.h"
+#include "friskFace0_png.h"
 #include "friskFace1_png.h"
 #include "friskFace2_png.h"
 #include "friskFace3_png.h"
-#include "friskFace0_png.h"
-#include "friskLeft1_png.h"
 #include "friskLeft0_png.h"
-#include "friskRight1_png.h"
+#include "friskLeft1_png.h"
 #include "friskRight0_png.h"
+#include "friskRight1_png.h"
 #include "torielHouse1_png.h"
 #include "torielHouse2_png.h"
 
@@ -33,28 +37,28 @@ static void audio_stop (void);
 
 // Room variables
 int room = 1;			// General info
-int roomEnter 	= 0;	// Entrances
+int roomEnter = 0;		// Entrances
 float room_x1;			// X1 coordinate
 float room_y1;			// Y1 coordinate
 float room_x2;			// X2 coordinate
 float room_y2;			// Y2 coordinate
 
 // Player variables
-int player 		= 0;	// General info
-int playerDir 	= 0;	// Direction
+int player = 0;			// General info
+int playerDir = 0;		// Direction
 float player_x;			// X coordinate
 float player_y;			// Y coordinate
-float hsp 		= 0;	// Horizontal speed
-float vsp 		= 0;	// Vertical speed
+float hsp = 0;			// Horizontal speed
+float vsp = 0;			// Vertical speed
 
 // Text variables
-int textWidth 	= 0;	// Width
-int textHeight 	= 0;	// Height
+int textWidth = 0;		// Width
+int textHeight = 0;		// Height
 
 // Timing variables
-int prevTime 	= 0;	// Previous time
-int currTime 	= 0;	// Current time
-float dt 		= 0;	// Movement timing
+int prevTime = 0;		// Previous time
+int currTime = 0;		// Current time
+float dt = 0;			// Movement timing
 double sprTimer = 0;	// Sprite timing
 
 // Textures and fonts
@@ -77,10 +81,10 @@ const u8* friskFilenames [4] [4] = {
 };
 
 // Constant variables for the player's walking textures
-const int FRISK_RIGHT 	= 0;
+const int FRISK_RIGHT = 0;
 const int FRISK_FORWARD = 1;
-const int FRISK_LEFT 	= 2;
-const int FRISK_BACK 	= 3;
+const int FRISK_LEFT = 2;
+const int FRISK_BACK = 3;
 
 // Easter Egg variables
 bool easterEgg1 = false;
@@ -89,14 +93,14 @@ void init () {
 
 	// Starting services
 	sf2d_init ();
-	sf2d_set_vblank_wait(0);
+	sf2d_set_vblank_wait (0);
 	sftd_init ();
-	srvInit();
-	aptInit();
-	hidInit(NULL);
+	srvInit ();
+	aptInit ();
+	hidInit (NULL);
 
 	// Starting audio service
-	csndInit();
+	csndInit ();
 
 	// Configuring the right font to use (8bitoperator), and its proprieties
 	font = sftd_load_font_mem (eightbit_ttf, eightbit_ttf_size);
@@ -110,9 +114,10 @@ void init () {
 	// Loop over every element in tex_arr_friskWalk and load the PNG buffer
 	// For some reason, here you have to declare the loop variables before the loop
 	
-	int i, j;
+	int i;
+	int j;
 
-	for (i = 0;i < 4; i++) { 
+	for (i = 0; i < 4; i++) { 
 		
 		for (j = 0; j < 4; j++) {
 			
@@ -136,7 +141,7 @@ void render () {
 	sf2d_draw_texture (curr_room, 40, 0);
 	
 	// Draw the player's sprite
-	sf2d_draw_texture (curr_tex, (int)player_x, (int)player_y);
+	sf2d_draw_texture (curr_tex, (int) player_x, (int) player_y);
 	
 	// End frame
 	sf2d_end_frame ();
@@ -199,7 +204,7 @@ int main (int argc, char **argv) {
 	// Unsigned variables for different types of button presses
 	u32 kDown = hidKeysDown ();
 	u32 kHeld = hidKeysHeld();
-	u32 kUp = hidKeysUp();
+	// u32 kUp = hidKeysUp();
 	
 	// Exit homebrew
 	if (kDown & KEY_START) {
@@ -218,7 +223,11 @@ int main (int argc, char **argv) {
 	timerStep ();
 	
 	// If no movement, set the sprite timer to 0
-	if (kDown & KEY_UP || kDown & KEY_DOWN || kDown & KEY_LEFT || kDown & KEY_RIGHT) sprTimer = 0;
+	if (kDown & KEY_UP || kDown & KEY_DOWN || kDown & KEY_LEFT || kDown & KEY_RIGHT) {
+		
+		sprTimer = 0;
+		
+	}
 	
 	// Reset horizontal and vertical speeds
 	vsp = 0; 
@@ -303,7 +312,7 @@ int main (int argc, char **argv) {
 	player_y += vsp * dt;
 	
 	// Player sprites
-	if (hsp == 0) {
+	if (hsp == 0 && vsp == 0) {
 		
 		curr_tex = tex_arr_friskWalk [playerDir] [0];
 		
@@ -339,7 +348,7 @@ int main (int argc, char **argv) {
 			roomEnter = 255;
 			
 		}
-	
+		
 		if (roomEnter == 1) {
 			
 			curr_room = tex_torielHouse1;
@@ -352,8 +361,21 @@ int main (int argc, char **argv) {
 			roomEnter = 255;
 			
 		}
-	
-		if (player_y >= 145 && player_y <= 195 && player_x <= 80 && playerDir == 2) { // this needs work!
+		
+		if (roomEnter == 2) {
+			
+			curr_room = tex_torielHouse1;
+			player_x = 304;
+			player_y = 160;
+			room_x1 = 77;
+			room_y1 = 60;
+			room_x2 = 305;
+			room_y2 = 188;
+			roomEnter = 255;
+			
+		}
+		
+		if (player_y >= 145 && player_y <= 195 && player_x <= 78 && playerDir == FRISK_LEFT) { // this needs work!
 			
 			room = 2;
 			roomEnter = 0;
@@ -367,7 +389,7 @@ int main (int argc, char **argv) {
 		if (roomEnter == 0) {
 			
 			curr_room = tex_torielHouse2;
-			player_x = 315;
+			player_x = 319;
 			player_y = 160;
 			room_x1 = 60;
 			room_y1 = 69;
@@ -377,7 +399,7 @@ int main (int argc, char **argv) {
 			
 		}
 		
-		if (player_y >= 145 && player_y <= 195 && player_x >= 317 && playerDir == 0) { // this needs work!
+		if (player_y >= 145 && player_y <= 195 && player_x >= 317 && playerDir == FRISK_RIGHT) { // this needs work!
 			
 			room = 1;
 			roomEnter = 1;
@@ -391,7 +413,8 @@ int main (int argc, char **argv) {
 }
 
 	// Free images/textures/fonts from memory
-	int i, j;
+	int i;
+	int j;
 	
 	for (i = 0; i < 4; i++) { 
 		
@@ -410,11 +433,11 @@ int main (int argc, char **argv) {
 	// Exit services
 	sf2d_fini ();
 	sftd_fini ();
-	audio_stop();
-	csndExit();
-	hidExit();
-	aptExit();
-	srvExit();
+	audio_stop ();
+	csndExit ();
+	hidExit ();
+	aptExit ();
+	srvExit ();
 
 	return 0;
 }
