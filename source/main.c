@@ -37,8 +37,8 @@ u8* buffer;				// Buffering audio file
 u32 size;				// Audio file size
 
 // Audio load (play) and stop voids
-static void audio_load (const char *audio);
-static void audio_stop (void);
+static void audio_load(const char *audio);
+static void audio_stop(void);
 
 // Room variables
 int room 		= 1;	// General info
@@ -79,9 +79,9 @@ sf2d_texture 	*tex_torielHouse6;
 sftd_font 		*font;
 
 // Multidirectional array to store all player's walking textures
-sf2d_texture* tex_arr_friskWalk [4] [4];
+sf2d_texture* tex_arr_friskWalk[4][4];
 
-const u8* friskFilenames [4] [4] = {
+const u8* friskFilenames[4][4] = {
 
 	{friskRight0_png, friskRight1_png, friskRight0_png, friskRight1_png}, 		// Right
 	{friskFace0_png, friskFace1_png, friskFace2_png, friskFace3_png,},			// Down
@@ -111,24 +111,24 @@ const int FRISK_BACK 	= 3;
 // Easter Egg variables
 bool easterEgg1 = false;
 
-void init () {
+void init() {
 
 	// Starting services
-	sf2d_init ();
+	sf2d_init();
 	sf2d_set_vblank_wait (0);
-	sftd_init ();
-	srvInit ();
-	aptInit ();
-	hidInit ();
+	sftd_init();
+	srvInit();
+	aptInit();
+	hidInit();
 
 	// Starting audio service
-	csndInit ();
+	csndInit();
 
 	// Configuring the right font to use (8bitoperator), and its proprieties
-	font = sftd_load_font_mem (eightbit_ttf, eightbit_ttf_size);
+	font = sftd_load_font_mem(eightbit_ttf, eightbit_ttf_size);
 
 	// Configuring graphics in general (images, textures, etc)
-	sf2d_set_clear_color (RGBA8 (0x00, 0x00, 0x00, 0xFF));
+	sf2d_set_clear_color(RGBA8 (0x00, 0x00, 0x00, 0xFF));
 	tex_torielHouse1 	= sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
 	tex_torielHouse2 	= sfil_load_PNG_buffer(torielHouse2_png, SF2D_PLACE_RAM);
 	tex_torielHouse31 	= sfil_load_PNG_buffer(torielHouse31_png, SF2D_PLACE_RAM);
@@ -144,13 +144,9 @@ void init () {
 	int i, j;
 
 	for (i = 0; i < 4; i++) {
-
 		for (j = 0; j < 4; j++) {
-
-			tex_arr_friskWalk [i] [j] = sfil_load_PNG_buffer (friskFilenames [i] [j], SF2D_PLACE_RAM);
-
+			tex_arr_friskWalk[i][j] = sfil_load_PNG_buffer(friskFilenames [i] [j], SF2D_PLACE_RAM);
 		}
-
 	}
 
 	// Construct rooms.
@@ -181,44 +177,44 @@ void init () {
 
 }
 
-void render () {
+void render() {
 
 	// Start frame on the top screen
-	sf2d_start_frame (GFX_TOP, GFX_LEFT);
+	sf2d_start_frame(GFX_TOP, GFX_LEFT);
 
 	// Draw the background (or in this case, the room)
-	sf2d_draw_texture (curr_room, 40, 0);
+	sf2d_draw_texture(curr_room, 40, 0);
 
 	// Draw the player's sprite
-	sf2d_draw_texture (curr_tex, (int) player_x, (int) player_y);
+	sf2d_draw_texture(curr_tex, (int) player_x, (int) player_y);
 
 	// End frame
-	sf2d_end_frame ();
+	sf2d_end_frame();
 
 	// If the easter egg variable is true, then activate it
 	if (easterEgg1) {
 
 		// Start frame on the bottom screen
-		sf2d_start_frame (GFX_BOTTOM, GFX_LEFT);
+		sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
 
 		// Draw the easter egg
-		sftd_draw_text (font, 10, 140,  RGBA8 (255, 0, 0, 255), 16, "* You IDIOT.");
-		sftd_draw_text (font, 10, 170,  RGBA8 (255, 255, 255, 255), 16, "* Nah, this is just");
-		sftd_draw_text (font, 10, 200,  RGBA8 (255, 255, 255, 255), 16, "   a simple test.");
+		sftd_draw_text(font, 10, 140,  RGBA8 (255, 0, 0, 255), 16, "* You IDIOT.");
+		sftd_draw_text(font, 10, 170,  RGBA8 (255, 255, 255, 255), 16, "* Nah, this is just");
+		sftd_draw_text(font, 10, 200,  RGBA8 (255, 255, 255, 255), 16, "   a simple test.");
 
 		// Debug stuff
-		sftd_draw_textf (font, 10, 10, RGBA8 (255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps ());
-		sftd_draw_textf (font, 10, 30, RGBA8 (255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
+		sftd_draw_textf(font, 10, 10, RGBA8 (255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
+		sftd_draw_textf(font, 10, 30, RGBA8 (255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
 
 		// End frame
-		sf2d_end_frame ();
+		sf2d_end_frame();
 
 	};
 
 }
 
 // Timer for the player's speed
-void timerStep () {
+void timerStep() {
 
 	// Set previous time as current time
 	prevTime = currTime;
@@ -248,18 +244,18 @@ void updateRoom() {
 }
 
 // Main part of the coding, where everything works (or not)
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
 
 	init();
 
 	// Main loop
-	while (aptMainLoop ()) {
+	while (aptMainLoop()) {
 
 	// Verify button presses
-	hidScanInput ();
+	hidScanInput();
 
 	// Unsigned variables for different types of button presses
-	u32 kDown = hidKeysDown ();
+	u32 kDown = hidKeysDown();
 	u32 kHeld = hidKeysHeld();
 	// u32 kUp = hidKeysUp();
 
@@ -277,7 +273,7 @@ int main (int argc, char **argv) {
 
 	}
 
-	timerStep ();
+	timerStep();
 
 	// If no movement, set the sprite timer to 0
 	if (kDown & KEY_UP || kDown & KEY_DOWN || kDown & KEY_LEFT || kDown & KEY_RIGHT) {
@@ -493,10 +489,10 @@ int main (int argc, char **argv) {
 	}
 
 
-	render ();
+	render();
 
 	// Swap sf2d framebuffers and wait for VBlank
-	sf2d_swapbuffers ();
+	sf2d_swapbuffers();
 
 }
 
@@ -504,48 +500,42 @@ int main (int argc, char **argv) {
 	int i, j;
 
 	for (i = 0; i < 4; i++) {
-
 		for (j = 0; j < 4; j++) {
-
 			sf2d_free_texture(tex_arr_friskWalk[i][j]);
-
 		}
-
 	}
 
-	sf2d_free_texture (tex_torielHouse1);
-	sf2d_free_texture (tex_torielHouse2);
-	sf2d_free_texture (tex_torielHouse31);
-	sf2d_free_texture (tex_torielHouse32);
-	sf2d_free_texture (tex_torielHouse4);
-	sf2d_free_texture (tex_torielHouse5);
-	sf2d_free_texture (tex_torielHouse6);
-	sftd_free_font (font);
+	sf2d_free_texture(tex_torielHouse1);
+	sf2d_free_texture(tex_torielHouse2);
+	sf2d_free_texture(tex_torielHouse31);
+	sf2d_free_texture(tex_torielHouse32);
+	sf2d_free_texture(tex_torielHouse4);
+	sf2d_free_texture(tex_torielHouse5);
+	sf2d_free_texture(tex_torielHouse6);
+	sftd_free_font(font);
 
 	// Exit services
-	sf2d_fini ();
-	sftd_fini ();
-	audio_stop ();
-	csndExit ();
-	hidExit ();
-	aptExit ();
-	srvExit ();
+	sf2d_fini();
+	sftd_fini();
+	audio_stop();
+	csndExit();
+	hidExit();
+	aptExit();
+	srvExit();
 
 	return 0;
 }
 
 // Audio load/play
 void audio_load (const char *audio) {
-
-	FILE *file = fopen (audio, "rb");
-	fseek (file, 0, SEEK_END);
-	off_t size = ftell (file);
-	fseek (file, 0, SEEK_SET);
+	FILE *file = fopen(audio, "rb");
+	fseek(file, 0, SEEK_END);
+	off_t size = ftell(file);
+	fseek(file, 0, SEEK_SET);
 	buffer = linearAlloc (size);
-	off_t bytesRead = fread (buffer, 1, size, file);
-	fclose (file);
+	off_t bytesRead = fread(buffer, 1, size, file);
+	fclose(file);
 	csndPlaySound (8, SOUND_FORMAT_16BIT | SOUND_REPEAT, 44100, 1, 0, buffer, buffer, size);
-
 }
 
 // Audio stop
