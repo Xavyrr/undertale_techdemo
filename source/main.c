@@ -99,27 +99,6 @@ struct room { // TODO: Move all of the room data into another file.
 };
 
 struct room rooms[4];
-rooms[1] = {
-	tex_torielHouse1, // tex
-	77,  // x1
-	60,  // y1
-	305, // x2
-	188  // y2
-};
-rooms[2] = {
-	tex_torielHouse2, // tex
-	60,  // x1
-	69,  // y1
-	320, // x2
-	190  // y2
-}
-rooms[3] = {
-	tex_torielHouse31,
-	40,
-	116,
-	340,
-	156
-}
 
 // struct room *curRoom = rooms[room];
 
@@ -173,6 +152,29 @@ void init () {
 		}
 
 	}
+
+	// Construct rooms.
+	rooms[1] = (struct room){
+		tex_torielHouse1, // tex
+		77,  // x1
+		60,  // y1
+		305, // x2
+		188  // y2
+	};
+	rooms[2] = (struct room){
+		tex_torielHouse2, // tex
+		60,  // x1
+		69,  // y1
+		320, // x2
+		190  // y2
+	};
+	rooms[3] = (struct room){
+		tex_torielHouse31,
+		40,
+		116,
+		340,
+		156
+	};
 
 	// Play music
 	audio_load("sound/music/home.bin");
@@ -235,6 +237,14 @@ void timerStep () {
 
 	}
 
+}
+
+void updateRoom() {
+	curr_room = rooms[room].tex;
+	room_x1 = rooms[room].x1;
+	room_y1 = rooms[room].y1;
+	room_x2 = rooms[room].x2;
+	room_y2 = rooms[room].y2;
 }
 
 // Main part of the coding, where everything works (or not)
@@ -379,15 +389,7 @@ int main (int argc, char **argv) {
 		sprTimer -= 4;
 
 	}
-
-	if (roomEnter != 255) {
-		curr_room = rooms[room].tex;
-		room_x1 = rooms[room].x1;
-		room_y1 = rooms[room].y1;
-		room_x2 = rooms[room].x2;
-		room_y2 = rooms[room].y2;
-	}
-
+	updateRoom();
 	// Localization/rooms
 	if (room == 1) {
 
@@ -489,6 +491,7 @@ int main (int argc, char **argv) {
 		}
 
 	}
+
 
 	render ();
 
