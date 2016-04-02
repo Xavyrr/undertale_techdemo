@@ -43,10 +43,6 @@ static void audio_stop(void);
 // Room variables
 int room 		= 1;	// General info
 int roomEnter 	= 0;	// Entrances
-float room_x1;			// X1 coordinate
-float room_y1;			// Y1 coordinate
-float room_x2;			// X2 coordinate
-float room_y2;			// Y2 coordinate
 
 // Player variables
 int player 		= 0;		// General info
@@ -66,9 +62,10 @@ int currTime 	= 0;	// Current time
 float dt 		= 0;	// Movement timing
 double sprTimer = 0;	// Sprite timing
 
-// Textures and fonts
+// sf2d_texture room_bg[7];
+
+// Textures and fonts // TODO: Load these from files on the SD Card. Or something.
 sf2d_texture 	*curr_tex;
-sf2d_texture 	*curr_room;
 sf2d_texture 	*tex_torielHouse1;
 sf2d_texture 	*tex_torielHouse2;
 sf2d_texture 	*tex_torielHouse31;
@@ -145,7 +142,7 @@ void init() {
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			tex_arr_friskWalk[i][j] = sfil_load_PNG_buffer(friskFilenames [i] [j], SF2D_PLACE_RAM);
+			tex_arr_friskWalk[i][j] = sfil_load_PNG_buffer(friskFilenames[i][j], SF2D_PLACE_RAM);
 		}
 	}
 
@@ -165,11 +162,11 @@ void init() {
 		190  // y2
 	};
 	rooms[3] = (struct room){
-		tex_torielHouse31,
-		40,
-		116,
-		340,
-		156
+		tex_torielHouse31, // tex
+		40,  // x1
+		116, // y1
+		338, // x2 // Originally 340, but changed so that transition to room 4 can't happen.
+		156  // y2
 	};
 
 	// Play music
@@ -183,7 +180,7 @@ void render() {
 	sf2d_start_frame(GFX_TOP, GFX_LEFT);
 
 	// Draw the background (or in this case, the room)
-	sf2d_draw_texture(curr_room, 40, 0);
+	sf2d_draw_texture(rooms[room].tex, 40, 0);
 
 	// Draw the player's sprite
 	sf2d_draw_texture(curr_tex, (int) player_x, (int) player_y);
@@ -198,13 +195,14 @@ void render() {
 		sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
 
 		// Draw the easter egg
-		sftd_draw_text(font, 10, 140,  RGBA8 (255, 0, 0, 255), 16, "* You IDIOT.");
-		sftd_draw_text(font, 10, 170,  RGBA8 (255, 255, 255, 255), 16, "* Nah, this is just");
-		sftd_draw_text(font, 10, 200,  RGBA8 (255, 255, 255, 255), 16, "   a simple test.");
+		sftd_draw_text(font, 10, 140,  RGBA8(255, 0, 0, 255), 16, "* You IDIOT.");
+		sftd_draw_text(font, 10, 170,  RGBA8(255, 255, 255, 255), 16, "* Nah, this is just");
+		sftd_draw_text(font, 10, 200,  RGBA8(255, 255, 255, 255), 16, "   a simple test.");
 
 		// Debug stuff
-		sftd_draw_textf(font, 10, 10, RGBA8 (255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
-		sftd_draw_textf(font, 10, 30, RGBA8 (255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
+		sftd_draw_textf(font, 10, 10, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
+		sftd_draw_textf(font, 10, 30, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
+		sftd_draw_textf(font, 10, 50, RGBA8(255, 0, 0, 255), 12, "X: %f, Y: %f", player_x, player_y);
 
 		// End frame
 		sf2d_end_frame();
@@ -236,11 +234,11 @@ void timerStep() {
 }
 
 void updateRoom() {
-	curr_room = rooms[room].tex;
+	/*curr_room = rooms[room].tex;
 	room_x1 = rooms[room].x1;
 	room_y1 = rooms[room].y1;
 	room_x2 = rooms[room].x2;
-	room_y2 = rooms[room].y2;
+	room_y2 = rooms[room].y2;*/
 }
 
 // Main part of the coding, where everything works (or not)
@@ -336,25 +334,25 @@ int main(int argc, char **argv) {
 	}
 
 	// Collision test before movement
-	if ((player_x + hsp) >= room_x2) {
+	if ((player_x + hsp) >= rooms[room].x2) {
 
 		hsp = 0;
 
 	}
 
-	if ((player_x + hsp) <= room_x1) {
+	if ((player_x + hsp) <= rooms[room].x1) {
 
 		hsp = 0;
 
 	}
 
-	if ((player_y + vsp) >= room_y2) {
+	if ((player_y + vsp) >= rooms[room].y2) {
 
 		vsp = 0;
 
 	}
 
-	if ((player_y + vsp) <= room_y1) {
+	if ((player_y + vsp) <= rooms[room].y1) {
 
 		vsp = 0;
 
@@ -365,17 +363,9 @@ int main(int argc, char **argv) {
 	player_y += vsp * dt;
 
 	// Player sprites
-	if (hsp == 0 && vsp == 0) {
+	if (hsp == 0 && vsp == 0) curr_tex = tex_arr_friskWalk[playerDir][0];
 
-		curr_tex = tex_arr_friskWalk [playerDir] [0];
-
-	}
-
-	else {
-
-		curr_tex = tex_arr_friskWalk [playerDir] [(int) floor (sprTimer)];
-
-	}
+	else curr_tex = tex_arr_friskWalk[playerDir][(int)floor(sprTimer)];
 
 	//Sprite animation timer
 	sprTimer += (.03 * dt);
@@ -465,7 +455,7 @@ int main(int argc, char **argv) {
 
 		if (roomEnter == 1) {
 
-			player_x 	= 339;
+			player_x 	= 338;
 			player_y 	= 131;
 
 			roomEnter 	= 255;
@@ -474,7 +464,7 @@ int main(int argc, char **argv) {
 
 		if (player_y >= 116 && player_y <= 156 && player_x <= 41 && playerDir == FRISK_LEFT) { // this needs work!
 
-			room 		= 0;
+			room 		= 1;
 			roomEnter 	= 2;
 
 		}

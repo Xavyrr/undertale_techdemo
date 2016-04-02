@@ -48,3 +48,8 @@ Temporary Items
 
 build
 other
+
+# 3DS binary files
+*.3dsx
+*.elf
+*.smdh
