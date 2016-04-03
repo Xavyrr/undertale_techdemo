@@ -1,6 +1,6 @@
 # undertale_techdemo
 
-EDIT: I'm now currently not working on this project, since I got caught into new stuff, my interest from the game has lowered and the new ctrulib changes demand for a lot of alterations to the code (mainly on sound). If you want to continue the project, feel free to clone it and continue developing it.
+We'll see how long this lasts, but for now, I'm making additions to this.
 
 Undertale Techdemo for 3DS
 
@@ -8,13 +8,13 @@ Made with ctrulib, sf2dlib, sftdlib, sfillib, and some sound examples from GBATe
 
 All resources and sounds from Undertale by Toby Fox.
 
-NOTE: To make this demo to work correctly, unzip the old version/release of the game into your "3ds" folder, or copy these files:
+NOTE: To make this demo to work correctly, copy these files:
 
 - undertale_techdemo.3dsx
 - undertale_techdemo.smdh
-- "data" folder
-- "sound" folder
+- everything under the 'romfs' folder. The "sound", "tex", and "font" folders.
 
 And place these files in a folder called "undertale_techdemo" (if you don't have it, create it on the "3ds" folder).
 
-If you are looking to compile the demo yourself, please delete the "build" folder, since it may cause some problems.
+If you are looking to compile the demo yourself, please run `make clean`, as otherwise there may be issues.
+A binary release of the current progress may come soon.
