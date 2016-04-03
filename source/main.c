@@ -26,8 +26,7 @@
 #include "friskRight1_png.h"
 #include "torielHouse1_png.h"
 #include "torielHouse2_png.h"
-#include "torielHouse31_png.h"
-#include "torielHouse32_png.h"
+#include "torielHouse3_png.h"
 #include "torielHouse4_png.h"
 #include "torielHouse5_png.h"
 #include "torielHouse6_png.h"
@@ -49,6 +48,8 @@ int player 		= 0;		// General info
 int playerDir	= 0;	// Direction
 float player_x;			// X coordinate
 float player_y;			// Y coordinate
+float screen_x;
+float screen_y;
 float hsp 		= 0;	// Horizontal speed
 float vsp 		= 0;	// Vertical speed
 
@@ -62,14 +63,13 @@ int currTime 	= 0;	// Current time
 float dt 		= 0;	// Movement timing
 double sprTimer = 0;	// Sprite timing
 
-// sf2d_texture room_bg[7];
+// sf2d_texture room_bg[6];
 
 // Textures and fonts // TODO: Load these from files on the SD Card. Or something.
 sf2d_texture 	*curr_tex;
 sf2d_texture 	*tex_torielHouse1;
 sf2d_texture 	*tex_torielHouse2;
-sf2d_texture 	*tex_torielHouse31;
-sf2d_texture 	*tex_torielHouse32;
+sf2d_texture 	*tex_torielHouse3;
 sf2d_texture 	*tex_torielHouse4;
 sf2d_texture 	*tex_torielHouse5;
 sf2d_texture 	*tex_torielHouse6;
@@ -93,6 +93,9 @@ struct room { // TODO: Move all of the room data into another file.
 	float y1;
 	float x2;
 	float y2;
+	int tex_x;
+	int tex_y;
+	bool scrolling;
 };
 
 struct room rooms[4];
@@ -109,10 +112,9 @@ const int FRISK_BACK 	= 3;
 bool easterEgg1 = false;
 
 void init() {
-
 	// Starting services
 	sf2d_init();
-	sf2d_set_vblank_wait (0);
+	sf2d_set_vblank_wait(0);
 	sftd_init();
 	srvInit();
 	aptInit();
@@ -128,8 +130,7 @@ void init() {
 	sf2d_set_clear_color(RGBA8 (0x00, 0x00, 0x00, 0xFF));
 	tex_torielHouse1 	= sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
 	tex_torielHouse2 	= sfil_load_PNG_buffer(torielHouse2_png, SF2D_PLACE_RAM);
-	tex_torielHouse31 	= sfil_load_PNG_buffer(torielHouse31_png, SF2D_PLACE_RAM);
-	tex_torielHouse32 	= sfil_load_PNG_buffer(torielHouse32_png, SF2D_PLACE_RAM);
+	tex_torielHouse3 	= sfil_load_PNG_buffer(torielHouse3_png, SF2D_PLACE_RAM);
 	tex_torielHouse4 	= sfil_load_PNG_buffer(torielHouse4_png, SF2D_PLACE_RAM);
 	tex_torielHouse5 	= sfil_load_PNG_buffer(torielHouse5_png, SF2D_PLACE_RAM);
 	tex_torielHouse6 	= sfil_load_PNG_buffer(torielHouse6_png, SF2D_PLACE_RAM);
@@ -146,44 +147,52 @@ void init() {
 		}
 	}
 
-	// Construct rooms.
+	// Construct rooms. // TODO: Move to another file.
+	// TODO: Move stuff around so that there is a room 0.
 	rooms[1] = (struct room){
-		tex_torielHouse1, // tex
-		77,  // x1
-		60,  // y1
-		305, // x2
-		188  // y2
+		tex_torielHouse1, // tex // TODO: Be able to reference the textures w/o initializing them first?
+		77,   // x1
+		60,   // y1
+		305,  // x2
+		188,  // y2
+		40,   // tex_x
+		0,    // tex_y
+		false,// scrolling
 	};
 	rooms[2] = (struct room){
-		tex_torielHouse2, // tex
-		60,  // x1
-		69,  // y1
-		320, // x2
-		190  // y2
+		tex_torielHouse2,
+		60,
+		69,
+		320,
+		190,
+		40,
+		0,
+		false,
 	};
 	rooms[3] = (struct room){
-		tex_torielHouse31, // tex
-		40,  // x1
-		116, // y1
-		338, // x2 // Originally 340, but changed so that transition to room 4 can't happen.
-		156  // y2
+		tex_torielHouse3,
+		0,
+		75,
+		796,  // x2 // Originally 340, but changed so that transition to room 4 can't happen.
+		205,
+		0,
+		72,
+		true,
 	};
 
 	// Play music
 	audio_load("sound/music/home.bin");
-
 }
 
 void render() {
-
 	// Start frame on the top screen
 	sf2d_start_frame(GFX_TOP, GFX_LEFT);
 
 	// Draw the background (or in this case, the room)
-	sf2d_draw_texture(rooms[room].tex, 40, 0);
+	sf2d_draw_texture(rooms[room].tex, rooms[room].tex_x + (int)screen_x, rooms[room].tex_y + (int)screen_y);
 
 	// Draw the player's sprite
-	sf2d_draw_texture(curr_tex, (int) player_x, (int) player_y);
+	sf2d_draw_texture(curr_tex, (int)player_x + (int)screen_x, (int)player_y + (int)screen_y);
 
 	// End frame
 	sf2d_end_frame();
@@ -202,18 +211,17 @@ void render() {
 		// Debug stuff
 		sftd_draw_textf(font, 10, 10, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
 		sftd_draw_textf(font, 10, 30, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
-		sftd_draw_textf(font, 10, 50, RGBA8(255, 0, 0, 255), 12, "X: %f, Y: %f", player_x, player_y);
+		sftd_draw_textf(font, 10, 50, RGBA8(255, 0, 0, 255), 12, "Player X: %f, Y: %f", player_x, player_y);
+		sftd_draw_textf(font, 10, 70, RGBA8(255, 0, 0, 255), 12, "Screen X: %f, Y: %f", screen_x, screen_y);
 
 		// End frame
 		sf2d_end_frame();
 
 	};
-
 }
 
 // Timer for the player's speed
 void timerStep() {
-
 	// Set previous time as current time
 	prevTime = currTime;
 
@@ -225,25 +233,11 @@ void timerStep() {
 	dt *= 0.15;
 
 	// We don't want to dt to be negative.
-	if (dt < 0) {
-
-		dt = 0;
-
-	}
-
-}
-
-void updateRoom() {
-	/*curr_room = rooms[room].tex;
-	room_x1 = rooms[room].x1;
-	room_y1 = rooms[room].y1;
-	room_x2 = rooms[room].x2;
-	room_y2 = rooms[room].y2;*/
+	if (dt < 0) dt = 0;
 }
 
 // Main part of the coding, where everything works (or not)
 int main(int argc, char **argv) {
-
 	init();
 
 	// Main loop
@@ -332,35 +326,29 @@ int main(int argc, char **argv) {
 		}
 
 	}
+	do {
+		// Collision test before movement
+		float tmp_x = player_x + hsp * dt;
+		float tmp_y = player_y + vsp * dt;
+		if (tmp_x >= rooms[room].x2 || \
+			tmp_x <= rooms[room].x1 || \
+			tmp_y >= rooms[room].y2 || \
+			tmp_y <= rooms[room].y1) break; // Should probably just use a goto. Oh well.
 
-	// Collision test before movement
-	if ((player_x + hsp) >= rooms[room].x2) {
+		// Actual movement calculation
 
-		hsp = 0;
+		if (rooms[room].scrolling) {
+			if (tmp_x >= 300) {
+				screen_x = 300 - tmp_x;
+			}
+			if (tmp_y <= 50) {
+				screen_y = 50 - tmp_y;
+			}
+		} else screen_x = screen_y = 0;
+		player_x = tmp_x;
+		player_y = tmp_y;
+	} while (0);
 
-	}
-
-	if ((player_x + hsp) <= rooms[room].x1) {
-
-		hsp = 0;
-
-	}
-
-	if ((player_y + vsp) >= rooms[room].y2) {
-
-		vsp = 0;
-
-	}
-
-	if ((player_y + vsp) <= rooms[room].y1) {
-
-		vsp = 0;
-
-	}
-
-	// Actual movement calculation
-	player_x += hsp * dt;
-	player_y += vsp * dt;
 
 	// Player sprites
 	if (hsp == 0 && vsp == 0) curr_tex = tex_arr_friskWalk[playerDir][0];
@@ -375,7 +363,7 @@ int main(int argc, char **argv) {
 		sprTimer -= 4;
 
 	}
-	updateRoom();
+
 	// Localization/rooms
 	if (room == 1) {
 
@@ -462,17 +450,10 @@ int main(int argc, char **argv) {
 
 		}
 
-		if (player_y >= 116 && player_y <= 156 && player_x <= 41 && playerDir == FRISK_LEFT) { // this needs work!
+		if (player_y >= 75 && player_y <= 205 && player_x <= 5 && playerDir == FRISK_LEFT) { // this needs work!
 
 			room 		= 1;
 			roomEnter 	= 2;
-
-		}
-
-		if (player_y >= 116 && player_y <= 156 && player_x >= 339 && playerDir == FRISK_RIGHT) { // this needs work!
-
-			room 		= 4;
-			roomEnter 	= 0;
 
 		}
 
@@ -497,8 +478,7 @@ int main(int argc, char **argv) {
 
 	sf2d_free_texture(tex_torielHouse1);
 	sf2d_free_texture(tex_torielHouse2);
-	sf2d_free_texture(tex_torielHouse31);
-	sf2d_free_texture(tex_torielHouse32);
+	sf2d_free_texture(tex_torielHouse3);
 	sf2d_free_texture(tex_torielHouse4);
 	sf2d_free_texture(tex_torielHouse5);
 	sf2d_free_texture(tex_torielHouse6);
@@ -536,5 +516,4 @@ void audio_stop (void) {
 	// memset (buffer, 0, size);
 	GSPGPU_FlushDataCache (buffer, size);
 	linearFree (buffer);
-
 }
