@@ -132,6 +132,7 @@ endif
 all: $(BUILD)
 
 $(BUILD):
+	@(cd $(CURDIR)/source/tremor;git reset --hard;git apply ../*.patch;)
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 

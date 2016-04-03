@@ -1,0 +1,453 @@
+From df02c3a54202cfac87ce757ff7ab24a364a2556b Mon Sep 17 00:00:00 2001
+From: Kitlith <kitling@kitling.ktarian.com>
+Date: Sun, 3 Apr 2016 10:22:23 -0700
+Subject: [PATCH] 3DS/DevkitARM fixes.
+
+---
+ iseeking_example.c    | 265 --------------------------------------------------
+ ivorbisfile_example.c |  91 -----------------
+ misc.h                |  17 ++--
+ 3 files changed, 7 insertions(+), 366 deletions(-)
+ delete mode 100644 iseeking_example.c
+ delete mode 100644 ivorbisfile_example.c
+
+diff --git a/iseeking_example.c b/iseeking_example.c
+deleted file mode 100644
+index dc971ba..0000000
+--- a/iseeking_example.c
++++ /dev/null
+@@ -1,265 +0,0 @@
+-/********************************************************************
+- *                                                                  *
+- * THIS FILE IS PART OF THE OggVorbis 'TREMOR' CODEC SOURCE CODE.   *
+- *                                                                  *
+- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
+- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
+- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+- *                                                                  *
+- * THE OggVorbis 'TREMOR' SOURCE CODE IS (C) COPYRIGHT 1994-2009    *
+- * BY THE Xiph.Org FOUNDATION http://www.xiph.org/                  *
+- *                                                                  *
+- ********************************************************************
+-
+- function: illustrate seeking, and test it too
+- last mod: $Id$
+-
+- ********************************************************************/
+-
+-#include <stdlib.h>
+-#include <stdio.h>
+-#include "ivorbiscodec.h"
+-#include "ivorbisfile.h"
+-
+-#ifdef _WIN32 /* We need the following two to set stdin/stdout to binary */
+-# include <io.h>
+-# include <fcntl.h>
+-#endif
+-
+-void _verify(OggVorbis_File *ov,
+-             ogg_int64_t val,
+-             ogg_int64_t pcmval,
+-             ogg_int64_t timeval,
+-             ogg_int64_t pcmlength,
+-             char *bigassbuffer){
+-  int j;
+-  long bread;
+-  char buffer[4096];
+-  int dummy;
+-  ogg_int64_t pos;
+-
+-  /* verify the raw position, the pcm position and position decode */
+-  if(val!=-1 && ov_raw_tell(ov)<val){
+-    fprintf(stderr,"raw position out of tolerance: requested %ld, got %ld\n",
+-           (long)val,(long)ov_raw_tell(ov));
+-    exit(1);
+-  }
+-  if(pcmval!=-1 && ov_pcm_tell(ov)>pcmval){
+-    fprintf(stderr,"pcm position out of tolerance: requested %ld, got %ld\n",
+-           (long)pcmval,(long)ov_pcm_tell(ov));
+-    exit(1);
+-  }
+-  if(timeval!=-1 && ov_time_tell(ov)>timeval){
+-    fprintf(stderr,"time position out of tolerance: requested %ld, got %ld\n",
+-            (long)timeval,(long)ov_time_tell(ov));
+-    exit(1);
+-  }
+-  pos=ov_pcm_tell(ov);
+-  if(pos<0 || pos>pcmlength){
+-    fprintf(stderr,"pcm position out of bounds: got %ld\n",(long)pos);
+-    exit(1);
+-  }
+-  bread=ov_read(ov,buffer,4096,&dummy);
+-  if(bigassbuffer){
+-    for(j=0;j<bread;j++){
+-      if(buffer[j]!=bigassbuffer[j+pos*4]){
+-	fprintf(stderr,"data position after seek doesn't match pcm position\n");
+-	
+-	{
+-	  FILE *f=fopen("a.m","w");
+-	  for(j=0;j<bread;j++)fprintf(f,"%d\n",(int)buffer[j]);
+-	  fclose(f);
+-	  f=fopen("b.m","w");
+-	  for(j=0;j<bread;j++)fprintf(f,"%d\n",(int)bigassbuffer[j+pos*2]);
+-	  fclose(f);
+-	}
+-	
+-	exit(1);
+-      }
+-    }
+-  }
+-}
+-
+-int main(){
+-  OggVorbis_File ov;
+-  int i,ret;
+-  ogg_int64_t pcmlength;
+-  ogg_int64_t timelength;
+-  char *bigassbuffer;
+-  int dummy;
+-
+-#ifdef _WIN32 /* We need to set stdin/stdout to binary mode. Damn windows. */
+-  _setmode( _fileno( stdin ), _O_BINARY );
+-#endif
+-
+-
+-  /* open the file/pipe on stdin */
+-  if(ov_open(stdin, &ov, NULL, 0) < 0) {
+-    fprintf(stderr,"Could not open input as an OggVorbis file.\n\n");
+-    exit(1);
+-  }
+-
+-  if(ov_seekable(&ov)){
+-
+-    /* to simplify our own lives, we want to assume the whole file is
+-       stereo.  Verify this to avoid potentially mystifying users
+-       (pissing them off is OK, just don't confuse them) */
+-    for(i=0;i<ov.links;i++){
+-      vorbis_info *vi=ov_info(&ov,i);
+-      if(vi->channels!=2){
+-        fprintf(stderr,"Sorry; right now seeking_test can only use Vorbis files\n"
+-               "that are entirely stereo.\n\n");
+-        exit(1);
+-      }
+-    }
+-    
+-    /* because we want to do sample-level verification that the seek
+-       does what it claimed, decode the entire file into memory */
+-    pcmlength=ov_pcm_total(&ov,-1);
+-    timelength=ov_time_total(&ov,-1);
+-    bigassbuffer=malloc(pcmlength*4); /* w00t */
+-    if(bigassbuffer){
+-      i=0;
+-      while(i<pcmlength*4){
+-	int ret=ov_read(&ov,bigassbuffer+i,pcmlength*4-i,&dummy);
+-	if(ret<0)continue;
+-	if(ret){
+-	  i+=ret;
+-	}else{
+-	  pcmlength=i/4;
+-	}
+-	fprintf(stderr,"\rloading.... [%ld left]              ",
+-		(long)(pcmlength*4-i));
+-      }
+-    }else{
+-      fprintf(stderr,"\rfile too large to load into memory for read tests;\n\tonly verifying seek positioning...\n");
+-    }
+-    
+-    {
+-      ogg_int64_t length=ov.end;
+-      fprintf(stderr,"\rtesting raw seeking to random places in %ld bytes....\n",
+-             (long)length);
+-    
+-      for(i=0;i<1000;i++){
+-        ogg_int64_t val=rand()*length/RAND_MAX;
+-        fprintf(stderr,"\r\t%d [raw position %ld]...     ",i,(long)val);
+-        ret=ov_raw_seek(&ov,val);
+-        if(ret<0){
+-          fprintf(stderr,"seek failed: %d\n",ret);
+-          exit(1);
+-        }
+-
+-        _verify(&ov,val,-1,-1.,pcmlength,bigassbuffer);
+-
+-      }
+-    }
+-
+-    fprintf(stderr,"\r");
+-    {
+-      fprintf(stderr,"testing pcm page seeking to random places in %ld samples....\n",
+-             (long)pcmlength);
+-    
+-      for(i=0;i<1000;i++){
+-        ogg_int64_t val=i==0?0:(double)rand()*pcmlength/RAND_MAX;
+-        fprintf(stderr,"\r\t%d [pcm position %ld]...     ",i,(long)val);
+-        ret=ov_pcm_seek_page(&ov,val);
+-        if(ret<0){
+-          fprintf(stderr,"seek failed: %d\n",ret);
+-          exit(1);
+-        }
+-
+-        _verify(&ov,-1,val,-1.,pcmlength,bigassbuffer);
+-
+-      }
+-    }
+-    
+-    fprintf(stderr,"\r");
+-    {
+-      fprintf(stderr,"testing pcm exact seeking to random places in %ld samples....\n",
+-             (long)pcmlength);
+-    
+-      for(i=0;i<1000;i++){
+-        ogg_int64_t val=i==0?0:(double)rand()*pcmlength/RAND_MAX;
+-        fprintf(stderr,"\r\t%d [pcm position %ld]...     ",i,(long)val);
+-        ret=ov_pcm_seek(&ov,val);
+-        if(ret<0){
+-          fprintf(stderr,"seek failed: %d\n",ret);
+-          exit(1);
+-        }
+-        if(ov_pcm_tell(&ov)!=val){
+-          fprintf(stderr,"Declared position didn't perfectly match request: %ld != %ld\n",
+-                 (long)val,(long)ov_pcm_tell(&ov));
+-          exit(1);
+-        }
+-
+-        _verify(&ov,-1,val,-1.,pcmlength,bigassbuffer);
+-
+-      }
+-    }
+-
+-    fprintf(stderr,"\r");
+-    {
+-      fprintf(stderr,"testing time page seeking to random places in %ld milliseconds....\n",
+-              (long)timelength);
+-    
+-      for(i=0;i<1000;i++){
+-        ogg_int64_t val=(double)rand()*timelength/RAND_MAX;
+-        fprintf(stderr,"\r\t%d [time position %ld]...     ",i,(long)val);
+-        ret=ov_time_seek_page(&ov,val);
+-        if(ret<0){
+-          fprintf(stderr,"seek failed: %d\n",ret);
+-          exit(1);
+-        }
+-
+-        _verify(&ov,-1,-1,val,pcmlength,bigassbuffer);
+-
+-      }
+-    }
+-
+-    fprintf(stderr,"\r");
+-    {
+-      fprintf(stderr,"testing time exact seeking to random places in %ld milliseconds....\n",
+-              (long)timelength);
+-    
+-      for(i=0;i<1000;i++){
+-        ogg_int64_t val=(double)rand()*timelength/RAND_MAX;
+-        fprintf(stderr,"\r\t%d [time position %ld]...     ",i,(long)val);
+-        ret=ov_time_seek(&ov,val);
+-        if(ret<0){
+-          fprintf(stderr,"seek failed: %d\n",ret);
+-          exit(1);
+-        }
+-        if(ov_time_tell(&ov)<val-1 || ov_time_tell(&ov)>val+1){
+-          fprintf(stderr,"Declared position didn't perfectly match request: %ld != %ld\n",
+-                  (long)val,(long)ov_time_tell(&ov));
+-          exit(1);
+-        }
+-
+-        _verify(&ov,-1,-1,val,pcmlength,bigassbuffer);
+-
+-      }
+-    }
+-    
+-    fprintf(stderr,"\r                                           \nOK.\n\n");
+-
+-
+-  }else{
+-    fprintf(stderr,"Standard input was not seekable.\n");
+-  }
+-
+-  ov_clear(&ov);
+-  return 0;
+-}
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+diff --git a/ivorbisfile_example.c b/ivorbisfile_example.c
+deleted file mode 100644
+index 7b0cf10..0000000
+--- a/ivorbisfile_example.c
++++ /dev/null
+@@ -1,91 +0,0 @@
+-/********************************************************************
+- *                                                                  *
+- * THIS FILE IS PART OF THE OggVorbis 'TREMOR' CODEC SOURCE CODE.   *
+- *                                                                  *
+- * USE, DISTRIBUTION AND REPRODUCTION OF THIS LIBRARY SOURCE IS     *
+- * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
+- * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
+- *                                                                  *
+- * THE OggVorbis 'TREMOR' SOURCE CODE IS (C) COPYRIGHT 1994-2002    *
+- * BY THE Xiph.Org FOUNDATION http://www.xiph.org/                  *
+- *                                                                  *
+- ********************************************************************
+-
+- function: simple example decoder using vorbisidec
+-
+- ********************************************************************/
+-
+-/* Takes a vorbis bitstream from stdin and writes raw stereo PCM to
+-   stdout using vorbisfile. Using vorbisfile is much simpler than
+-   dealing with libvorbis. */
+-
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include "ivorbiscodec.h"
+-#include "ivorbisfile.h"
+-
+-#ifdef _WIN32 /* We need the following two to set stdin/stdout to binary */
+-#include <io.h>
+-#include <fcntl.h>
+-#endif
+-
+-char pcmout[4096]; /* take 4k out of the data segment, not the stack */
+-
+-int main(){
+-  OggVorbis_File vf;
+-  int eof=0;
+-  int current_section;
+-
+-#ifdef _WIN32 /* We need to set stdin/stdout to binary mode. Damn windows. */
+-  /* Beware the evil ifdef. We avoid these where we can, but this one we 
+-     cannot. Don't add any more, you'll probably go to hell if you do. */
+-  _setmode( _fileno( stdin ), _O_BINARY );
+-  _setmode( _fileno( stdout ), _O_BINARY );
+-#endif
+-
+-  if(ov_open(stdin, &vf, NULL, 0) < 0) {
+-      fprintf(stderr,"Input does not appear to be an Ogg bitstream.\n");
+-      exit(1);
+-  }
+-
+-  /* Throw the comments plus a few lines about the bitstream we're
+-     decoding */
+-  {
+-    char **ptr=ov_comment(&vf,-1)->user_comments;
+-    vorbis_info *vi=ov_info(&vf,-1);
+-    while(*ptr){
+-      fprintf(stderr,"%s\n",*ptr);
+-      ++ptr;
+-    }
+-    fprintf(stderr,"\nBitstream is %d channel, %ldHz\n",vi->channels,vi->rate);
+-    fprintf(stderr,"\nDecoded length: %ld samples\n",
+-	    (long)ov_pcm_total(&vf,-1));
+-    fprintf(stderr,"Encoded by: %s\n\n",ov_comment(&vf,-1)->vendor);
+-  }
+-  
+-  while(!eof){
+-    long ret=ov_read(&vf,pcmout,sizeof(pcmout),&current_section);
+-    if (ret == 0) {
+-      /* EOF */
+-      eof=1;
+-    } else if (ret < 0) {
+-      if(ret==OV_EBADLINK){
+-        fprintf(stderr,"Corrupt bitstream section! Exiting.\n");
+-        exit(1);
+-      }
+-
+-      /* some other error in the stream.  Not a problem, just reporting it in
+-	 case we (the app) cares.  In this case, we don't. */
+-    } else {
+-      /* we don't bother dealing with sample rate changes, etc, but
+-	 you'll have to*/
+-      fwrite(pcmout,1,ret,stdout);
+-    }
+-  }
+-
+-  /* cleanup */
+-  ov_clear(&vf);
+-    
+-  fprintf(stderr,"Done.\n");
+-  return(0);
+-}
+diff --git a/misc.h b/misc.h
+index 1ae4d2e..237410d 100644
+--- a/misc.h
++++ b/misc.h
+@@ -19,6 +19,7 @@
+ #define _V_RANDOM_H_
+ #include "ivorbiscodec.h"
+ #include "os.h"
++#include <sys/param.h>
+ 
+ #ifdef _LOW_ACCURACY_
+ #  define X(n) (((((n)>>22)+1)>>1) - ((((n)>>22)+1)>>9))
+@@ -30,10 +31,10 @@
+ 
+ #include "asm_arm.h"
+ #include <stdlib.h> /* for abs() */
+-  
++
+ #ifndef _V_WIDE_MATH
+ #define _V_WIDE_MATH
+-  
++
+ #ifndef  _LOW_ACCURACY_
+ /* 64 bit multiply */
+ 
+@@ -49,7 +50,7 @@ union magic {
+   } halves;
+   ogg_int64_t whole;
+ };
+-#endif 
++#endif
+ 
+ #if BYTE_ORDER==BIG_ENDIAN
+ union magic {
+@@ -88,7 +89,7 @@ STIN ogg_int32_t MULT31_SHIFT15(ogg_int32_t x, ogg_int32_t y) {
+ 
+ /*
+  * For MULT32 and MULT31: The second argument is always a lookup table
+- * value already preshifted from 31 to 8 bits.  We therefore take the 
++ * value already preshifted from 31 to 8 bits.  We therefore take the
+  * opportunity to save on text space and use unsigned char for those
+  * tables in this case.
+  */
+@@ -187,7 +188,7 @@ STIN ogg_int32_t VFLOAT_MULT(ogg_int32_t a,ogg_int32_t ap,
+     return MULT32(a,b);
+ #else
+     *p=ap+bp+31;
+-    return (a>>15)*(b>>16); 
++    return (a>>15)*(b>>16);
+ #endif
+   }else
+     return 0;
+@@ -237,7 +238,7 @@ STIN ogg_int32_t VFLOAT_ADD(ogg_int32_t a,ogg_int32_t ap,
+   }
+ 
+   a+=b;
+-  if((a&0xc0000000)==0xc0000000 || 
++  if((a&0xc0000000)==0xc0000000 ||
+      (a&0xc0000000)==0){
+     a<<=1;
+     (*p)--;
+@@ -246,7 +247,3 @@ STIN ogg_int32_t VFLOAT_ADD(ogg_int32_t a,ogg_int32_t ap,
+ }
+ 
+ #endif
+-
+-
+-
+-
+-- 
+2.5.0
+
