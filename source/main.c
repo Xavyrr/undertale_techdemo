@@ -9,27 +9,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-// #include "eightbit_ttf.h"
-
-// Load images
-// #include "friskBack0_png.h"
-// #include "friskBack1_png.h"
-// #include "friskBack2_png.h"
-// #include "friskBack3_png.h"
-// #include "friskFace0_png.h"
-// #include "friskFace1_png.h"
-// #include "friskFace2_png.h"
-// #include "friskFace3_png.h"
-// #include "friskLeft0_png.h"
-// #include "friskLeft1_png.h"
-// #include "friskRight0_png.h"
-// #include "friskRight1_png.h"
-// #include "torielHouse1_png.h"
-// #include "torielHouse2_png.h"
-// #include "torielHouse3_png.h"
-// #include "torielHouse4_png.h"
-// #include "torielHouse5_png.h"
-// #include "torielHouse6_png.h"
 
 // Sound/Music stuff
 u8* buffer;				// Buffering audio file
