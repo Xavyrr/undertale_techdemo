@@ -10,17 +10,7 @@
 #include <math.h>
 #include <time.h>
 
-// Sound/Music stuff
-#include <sys/param.h>
-#include "tremor/ivorbiscodec.h"
-#include "tremor/ivorbisfile.h"
-char pcmout[4096];
-u8* buffer;				// Buffering audio file
-unsigned long size;				// Audio file size
-
-// Audio load (play) and stop voids
-static void audio_load(const char *audio);
-static void audio_stop(void);
+#include "sound.h"
 
 // Room variables
 int room 		= 1;	// General info
@@ -92,7 +82,9 @@ const int FRISK_LEFT 	= 2;
 const int FRISK_BACK 	= 3;
 
 // Easter Egg variables
-bool easterEgg1 = false;
+bool easterEgg	= false;
+int  easterPage = 0;
+#define MAX_PAGE 1
 
 void init() {
 	// Starting services
@@ -106,6 +98,7 @@ void init() {
 
 	// Starting audio service
 	csndInit();
+	ndspInit();
 
 	// Configuring the right font to use (8bitoperator), and its proprieties
 	font = sftd_load_font_file("font/eightbit.ttf");
@@ -165,28 +158,7 @@ void init() {
 	};
 
 	// Play music
-	//audio_load("sound/music/home.bin");
-	FILE *home = fopen("sound/music/home.ogg", "rb"); // Copied from ivorbisfile_example.c
-	OggVorbis_File vf;
-	if (ov_open(home, &vf, NULL, 0)) {
-		return;
-	}
-	size = (long)ov_pcm_total(&vf,-1);
-	buffer = linearAlloc(size * sizeof(pcmout));
-	bool eof;
-	int current_section;
-	while (!eof) {
-		long ret=ov_read(&vf, pcmout, sizeof(pcmout), &current_section);
-		if (ret == 0) {
-			eof = true;
-		} else if (ret < 0) {
-			break;
-		} else {
-			memcpy(buffer+current_section*sizeof(pcmout), pcmout, sizeof(pcmout));
-		}
-	}
-	ov_clear(&vf);
-	csndPlaySound (8, SOUND_FORMAT_16BIT | SOUND_REPEAT, 44100, 1, 0, buffer, buffer, sizeof(buffer));
+	audio_load_ogg("sound/music/home.ogg");
 }
 
 void render() {
@@ -203,7 +175,7 @@ void render() {
 	sf2d_end_frame();
 
 	// If the easter egg variable is true, then activate it
-	if (easterEgg1) {
+	if (easterEgg) {
 
 		// Start frame on the bottom screen
 		sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
@@ -212,14 +184,20 @@ void render() {
 		sftd_draw_text(font, 10, 140,  RGBA8(255, 0, 0, 255), 16, "* You IDIOT.");
 		sftd_draw_text(font, 10, 170,  RGBA8(255, 255, 255, 255), 16, "* Nah, this is just");
 		sftd_draw_text(font, 10, 200,  RGBA8(255, 255, 255, 255), 16, "   a simple test.");
-
+		int y = -10;
 		// Debug stuff
-		sftd_draw_textf(font, 10, 10, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
-		sftd_draw_textf(font, 10, 30, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
-		sftd_draw_textf(font, 10, 50, RGBA8(255, 255, 255, 255), 12, "Player X: %f, Y: %f", player_x, player_y);
-		sftd_draw_textf(font, 10, 70, RGBA8(255, 255, 255, 255), 12, "Screen X: %f, Y: %f", screen_x, screen_y);
-		sftd_draw_textf(font, 10, 90, RGBA8(255, 0, 0, 255), 12, "Mus: Size: %lu", size);
-
+		switch (easterPage){
+			case 0:
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Player X: %f, Y: %f", player_x, player_y);
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Screen X: %f, Y: %f", screen_x, screen_y);
+				break;
+			case 1:
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Size: %lu", size);
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Buffer Position: %lu", buf_pos);
+				break;
+		}
 		// End frame
 		sf2d_end_frame();
 
@@ -249,229 +227,190 @@ int main(int argc, char **argv) {
 	// Main loop
 	while (aptMainLoop()) {
 
-	// Verify button presses
-	hidScanInput();
+		// Verify button presses
+		hidScanInput();
 
-	// Unsigned variables for different types of button presses
-	u32 kDown = hidKeysDown();
-	u32 kHeld = hidKeysHeld();
-	// u32 kUp = hidKeysUp();
+		// Unsigned variables for different types of button presses
+		u32 kDown = hidKeysDown();
+		u32 kHeld = hidKeysHeld();
+		// u32 kUp = hidKeysUp();
 
-	// Exit homebrew
-	if (kDown & KEY_START) {
-
-		break;
-
-	}
-
-	// Activate first easter egg
-	else if (kDown & KEY_SELECT) {
-
-		easterEgg1 = true;
-
-	}
-
-	timerStep();
-
-	// If no movement, set the sprite timer to 0
-	if (kDown & KEY_UP || kDown & KEY_DOWN || kDown & KEY_LEFT || kDown & KEY_RIGHT) {
-
-		sprTimer = 0;
-
-	}
-
-	// Reset horizontal and vertical speeds
-	vsp = 0;
-	hsp = 0;
-
-	// Player movement (pretty easy to understand)
-	if (kHeld & KEY_UP) {
-
-		if (!(kHeld & KEY_DOWN)) {
-
-			vsp 		= -.5;			// Vertical speed to negative .5
-			playerDir 	= FRISK_BACK;	// Player direction = back
-
+		// Exit homebrew
+		if (kDown & KEY_START) {
+			break;
 		}
 
-	}
-
-	if (kHeld & KEY_DOWN) {
-
-		vsp 		= .5;				// Vertical speed to .5
-		playerDir 	= FRISK_FORWARD;	// Player direction = up
-
-	}
-
-	if (kHeld & KEY_LEFT) {
-
-		if (!(kHeld & KEY_RIGHT)) {
-
-			hsp 		= -.5;			// Vertical speed to negative .5
-			playerDir 	= FRISK_LEFT;	// Player direction = left
-
+		// Activate first easter egg
+		else if (kDown & KEY_SELECT) {
+			easterEgg = !easterEgg;
 		}
 
-	}
-
-	if (kHeld & KEY_RIGHT) {
-
-		hsp 		= .5;				// Vertical speed to .5
-		playerDir 	= FRISK_RIGHT;		// Player direction = right
-
-	}
-
-	// Diagonal movement speed fix
-	if (vsp != 0) {
-
-		if (hsp != 0) {
-
-			vsp *= .8;
-			hsp *= .8;
-
+		// Change pages for the easterEgg/debug menu.
+		else if (kDown & KEY_R) {
+			if (++easterPage >= MAX_PAGE) easterPage = MAX_PAGE;
 		}
 
-	}
-	do {
-		// Collision test before movement
-		float tmp_x = player_x + hsp * dt;
-		float tmp_y = player_y + vsp * dt;
-		if (tmp_x >= rooms[room].x2 || \
-			tmp_x <= rooms[room].x1 || \
-			tmp_y >= rooms[room].y2 || \
-			tmp_y <= rooms[room].y1) break; // Should probably just use a goto. Oh well.
+		else if (kDown & KEY_L) {
+			if (--easterPage <= 0) easterPage = 0;
+		}
 
-		// Actual movement calculation
 
-		if (rooms[room].scrolling) {
-			if (tmp_x >= 300) {
-				screen_x = 300 - tmp_x;
+		timerStep();
+
+		// If no movement, set the sprite timer to 0
+		if (kDown & KEY_UP || kDown & KEY_DOWN || kDown & KEY_LEFT || kDown & KEY_RIGHT) {
+			sprTimer = 0;
+		}
+
+		// Reset horizontal and vertical speeds
+		vsp = 0;
+		hsp = 0;
+
+		// Player movement (pretty easy to understand)
+		if (kHeld & KEY_UP) {
+			if (!(kHeld & KEY_DOWN)) {
+				vsp 		= -.5;			// Vertical speed to negative .5
+				playerDir 	= FRISK_BACK;	// Player direction = back
 			}
-			if (tmp_y <= 50) {
-				screen_y = 50 - tmp_y;
+		}
+
+		if (kHeld & KEY_DOWN) {
+			vsp 		= .5;				// Vertical speed to .5
+			playerDir 	= FRISK_FORWARD;	// Player direction = up
+		}
+
+		if (kHeld & KEY_LEFT) {
+			if (!(kHeld & KEY_RIGHT)) {
+				hsp 		= -.5;			// Vertical speed to negative .5
+				playerDir 	= FRISK_LEFT;	// Player direction = left
 			}
-		} else screen_x = screen_y = 0;
-		player_x = tmp_x;
-		player_y = tmp_y;
-	} while (0);
+		}
+
+		if (kHeld & KEY_RIGHT) {
+			hsp 		= .5;				// Vertical speed to .5
+			playerDir 	= FRISK_RIGHT;		// Player direction = right
+		}
+
+		// Diagonal movement speed fix
+		if (vsp != 0) {
+			if (hsp != 0) {
+				vsp *= .8;
+				hsp *= .8;
+			}
+		}
+
+		do {
+			// Collision test before movement
+			float tmp_x = player_x + hsp * dt;
+			float tmp_y = player_y + vsp * dt;
+			if (tmp_x >= rooms[room].x2 || \
+				tmp_x <= rooms[room].x1 || \
+				tmp_y >= rooms[room].y2 || \
+				tmp_y <= rooms[room].y1) break; // Should probably just use a goto. Oh well.
+
+			// Actual movement calculation
+			if (rooms[room].scrolling) {
+				if (tmp_x >= 300) {
+					screen_x = 300 - tmp_x;
+				}
+				if (tmp_y <= 50) {
+					screen_y = 50 - tmp_y;
+				}
+			} else screen_x = screen_y = 0;
+
+			player_x = tmp_x;
+			player_y = tmp_y;
+		} while (0);
 
 
-	// Player sprites
-	if (hsp == 0 && vsp == 0) curr_tex = tex_arr_friskWalk[playerDir][0];
+		// Player sprites
+		if (hsp == 0 && vsp == 0) curr_tex = tex_arr_friskWalk[playerDir][0];
 
-	else curr_tex = tex_arr_friskWalk[playerDir][(int)floor(sprTimer)];
+		else curr_tex = tex_arr_friskWalk[playerDir][(int)floor(sprTimer)];
 
-	//Sprite animation timer
-	sprTimer += (.03 * dt);
+		//Sprite animation timer
+		sprTimer += (.03 * dt);
 
-	while (sprTimer >= 4) {
+		while (sprTimer >= 4) {
+			sprTimer -= 4;
+		}
 
-		sprTimer -= 4;
+		// Localization/rooms // TODO: Create exit struct.
+		if (room == 1) {
+			if (roomEnter == 0) {
+				player_x 	= 190;
+				player_y 	= 160;
 
+				roomEnter	= 255;
+			}
+
+			if (roomEnter == 1) {
+				player_x 	= 78;
+				player_y 	= 160;
+
+				roomEnter 	= 255;
+			}
+
+			if (roomEnter == 2) {
+				player_x 	= 304;
+				player_y 	= 160;
+
+				roomEnter 	= 255;
+			}
+
+			if (player_y >= 145 && player_y <= 195 && player_x <= 78 && playerDir == FRISK_LEFT) { // this needs work!
+				room 		= 2;
+				roomEnter 	= 0;
+			}
+
+			if (player_y >= 145 && player_y <= 195 && player_x >= 281 && playerDir == FRISK_RIGHT) { // this needs work!
+				room 		= 3;
+				roomEnter 	= 0;
+			}
+
+		}
+
+		if (room == 2) {
+			if (roomEnter == 0) {
+				player_x 	= 319;
+				player_y 	= 160;
+
+				roomEnter 	= 255;
+			}
+
+			if (player_y >= 145 && player_y <= 195 && player_x >= 319 && playerDir == FRISK_RIGHT) { // this needs work!
+				room = 1;
+				roomEnter 	= 1;
+			}
+
+		}
+
+		if (room == 3) {
+			if (roomEnter == 0) {
+				player_x 	= 41;
+				player_y 	= 131;
+
+				roomEnter 	= 255;
+			}
+
+			if (roomEnter == 1) {
+				player_x 	= 338;
+				player_y 	= 131;
+
+				roomEnter 	= 255;
+			}
+
+			if (player_y >= 75 && player_y <= 205 && player_x <= 5 && playerDir == FRISK_LEFT) { // this needs work!
+				room 		= 1;
+				roomEnter 	= 2;
+			}
+		}
+
+		render();
+
+		// Swap sf2d framebuffers and wait for VBlank
+		sf2d_swapbuffers();
 	}
-
-	// Localization/rooms
-	if (room == 1) {
-
-		if (roomEnter == 0) {
-
-			player_x 	= 190;
-			player_y 	= 160;
-
-			roomEnter	= 255;
-
-		}
-
-		if (roomEnter == 1) {
-
-			player_x 	= 78;
-			player_y 	= 160;
-
-			roomEnter 	= 255;
-
-		}
-
-		if (roomEnter == 2) {
-
-			player_x 	= 304;
-			player_y 	= 160;
-
-			roomEnter 	= 255;
-
-		}
-
-		if (player_y >= 145 && player_y <= 195 && player_x <= 78 && playerDir == FRISK_LEFT) { // this needs work!
-
-			room 		= 2;
-			roomEnter 	= 0;
-
-		}
-
-		if (player_y >= 145 && player_y <= 195 && player_x >= 281 && playerDir == FRISK_RIGHT) { // this needs work!
-
-			room 		= 3;
-			roomEnter 	= 0;
-
-		}
-
-	}
-
-	if (room == 2) {
-
-		if (roomEnter == 0) {
-
-			player_x 	= 319;
-			player_y 	= 160;
-
-			roomEnter 	= 255;
-
-		}
-
-		if (player_y >= 145 && player_y <= 195 && player_x >= 319 && playerDir == FRISK_RIGHT) { // this needs work!
-
-			room = 1;
-			roomEnter 	= 1;
-
-		}
-
-	}
-
-	if (room == 3) {
-
-		if (roomEnter == 0) {
-
-			player_x 	= 41;
-			player_y 	= 131;
-
-			roomEnter 	= 255;
-
-		}
-
-		if (roomEnter == 1) {
-
-			player_x 	= 338;
-			player_y 	= 131;
-
-			roomEnter 	= 255;
-
-		}
-
-		if (player_y >= 75 && player_y <= 205 && player_x <= 5 && playerDir == FRISK_LEFT) { // this needs work!
-
-			room 		= 1;
-			roomEnter 	= 2;
-
-		}
-
-	}
-
-
-	render();
-
-	// Swap sf2d framebuffers and wait for VBlank
-	sf2d_swapbuffers();
-
-}
 
 	// Free images/textures/fonts from memory
 	int i, j;
@@ -500,26 +439,4 @@ int main(int argc, char **argv) {
 	srvExit();
 
 	return 0;
-}
-
-// Audio load/play
-void audio_load (const char *audio) {
-	FILE *file = fopen(audio, "rb");
-	fseek(file, 0, SEEK_END);
-	off_t size = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	buffer = linearAlloc (size);
-	off_t bytesRead = fread(buffer, 1, size, file);
-	fclose(file);
-	csndPlaySound (8, SOUND_FORMAT_16BIT | SOUND_REPEAT, 44100, 1, 0, buffer, buffer, size);
-}
-
-// Audio stop
-void audio_stop (void) {
-
-	csndExecCmds (true);
-	CSND_SetPlayState (0x8, 0);
-	// memset (buffer, 0, size);
-	GSPGPU_FlushDataCache (buffer, size);
-	linearFree (buffer);
 }

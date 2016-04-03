@@ -2,7 +2,7 @@
 .SUFFIXES:
 #---------------------------------------------------------------------------------
 
-ifeq ($(strip $(DEVKITARM)),)
+ifeq ($(strip $(DEVKITARM)),) # This is in 3ds_rules, why is it here?
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
@@ -132,7 +132,7 @@ endif
 all: $(BUILD)
 
 $(BUILD):
-	@(cd $(CURDIR)/source/tremor;git reset --hard;git apply ../*.patch;)
+	#@(cd $(CURDIR)/source/tremor;git reset --hard;git apply ../*.patch;)
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
