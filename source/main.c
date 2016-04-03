@@ -11,12 +11,12 @@
 #include <time.h>
 
 // Sound/Music stuff
+#include <sys/param.h>
 #include "tremor/ivorbiscodec.h"
 #include "tremor/ivorbisfile.h"
 char pcmout[4096];
-bool mus_failure = false;
 u8* buffer;				// Buffering audio file
-u32 size;				// Audio file size
+unsigned long size;				// Audio file size
 
 // Audio load (play) and stop voids
 static void audio_load(const char *audio);
@@ -112,7 +112,6 @@ void init() {
 
 	// Configuring graphics in general (images, textures, etc)
 	sf2d_set_clear_color(RGBA8 (0x00, 0x00, 0x00, 0xFF));
-	FILE *log = fopen("UT.log","w");
 	tex_torielHouse1 	= sfil_load_PNG_file("tex/torielHouse1.png", SF2D_PLACE_RAM);
 	tex_torielHouse2 	= sfil_load_PNG_file("tex/torielHouse2.png", SF2D_PLACE_RAM);
 	tex_torielHouse3 	= sfil_load_PNG_file("tex/torielHouse3.png", SF2D_PLACE_RAM);
@@ -170,13 +169,10 @@ void init() {
 	FILE *home = fopen("sound/music/home.ogg", "rb"); // Copied from ivorbisfile_example.c
 	OggVorbis_File vf;
 	if (ov_open(home, &vf, NULL, 0)) {
-		mus_failure = true;
 		return;
 	}
-	{
-		long size = (long)ov_pcm_total(&vf,-1);
-		buffer = linearAlloc(size * sizeof(pcmout));
-	}
+	size = (long)ov_pcm_total(&vf,-1);
+	buffer = linearAlloc(size * sizeof(pcmout));
 	bool eof;
 	int current_section;
 	while (!eof) {
@@ -184,10 +180,9 @@ void init() {
 		if (ret == 0) {
 			eof = true;
 		} else if (ret < 0) {
-			mus_failure = true;
 			break;
 		} else {
-			memcpy(pcmout, buffer+current_section*sizeof(pcmout), sizeof(pcmout));
+			memcpy(buffer+current_section*sizeof(pcmout), pcmout, sizeof(pcmout));
 		}
 	}
 	ov_clear(&vf);
@@ -223,8 +218,7 @@ void render() {
 		sftd_draw_textf(font, 10, 30, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
 		sftd_draw_textf(font, 10, 50, RGBA8(255, 255, 255, 255), 12, "Player X: %f, Y: %f", player_x, player_y);
 		sftd_draw_textf(font, 10, 70, RGBA8(255, 255, 255, 255), 12, "Screen X: %f, Y: %f", screen_x, screen_y);
-		if (mus_failure)
-			sftd_draw_text(font, 10, 90, RGBA8(255, 0, 0, 255), 12, "Music FAILED to load!");
+		sftd_draw_textf(font, 10, 90, RGBA8(255, 0, 0, 255), 12, "Mus: Size: %lu", size);
 
 		// End frame
 		sf2d_end_frame();
