@@ -9,27 +9,27 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include "eightbit_ttf.h"
+// #include "eightbit_ttf.h"
 
 // Load images
-#include "friskBack0_png.h"
-#include "friskBack1_png.h"
-#include "friskBack2_png.h"
-#include "friskBack3_png.h"
-#include "friskFace0_png.h"
-#include "friskFace1_png.h"
-#include "friskFace2_png.h"
-#include "friskFace3_png.h"
-#include "friskLeft0_png.h"
-#include "friskLeft1_png.h"
-#include "friskRight0_png.h"
-#include "friskRight1_png.h"
-#include "torielHouse1_png.h"
-#include "torielHouse2_png.h"
-#include "torielHouse3_png.h"
-#include "torielHouse4_png.h"
-#include "torielHouse5_png.h"
-#include "torielHouse6_png.h"
+// #include "friskBack0_png.h"
+// #include "friskBack1_png.h"
+// #include "friskBack2_png.h"
+// #include "friskBack3_png.h"
+// #include "friskFace0_png.h"
+// #include "friskFace1_png.h"
+// #include "friskFace2_png.h"
+// #include "friskFace3_png.h"
+// #include "friskLeft0_png.h"
+// #include "friskLeft1_png.h"
+// #include "friskRight0_png.h"
+// #include "friskRight1_png.h"
+// #include "torielHouse1_png.h"
+// #include "torielHouse2_png.h"
+// #include "torielHouse3_png.h"
+// #include "torielHouse4_png.h"
+// #include "torielHouse5_png.h"
+// #include "torielHouse6_png.h"
 
 // Sound/Music stuff
 u8* buffer;				// Buffering audio file
@@ -78,12 +78,12 @@ sftd_font 		*font;
 // Multidirectional array to store all player's walking textures
 sf2d_texture* tex_arr_friskWalk[4][4];
 
-const u8* friskFilenames[4][4] = {
+char* friskFilenames[4][4] = {
 
-	{friskRight0_png, friskRight1_png, friskRight0_png, friskRight1_png}, 		// Right
-	{friskFace0_png, friskFace1_png, friskFace2_png, friskFace3_png,},			// Down
-	{friskLeft0_png, friskLeft1_png, friskLeft0_png, friskLeft1_png},			// Left
-	{friskBack0_png, friskBack1_png, friskBack2_png, friskBack3_png}			// Up
+	{"tex/friskRight0.png", "tex/friskRight1.png", "tex/friskRight0.png", "tex/friskRight1.png"}, 		// Right
+	{"tex/friskFace0.png", "tex/friskFace1.png", "tex/friskFace2.png", "tex/friskFace3.png"},			// Down
+	{"tex/friskLeft0.png", "tex/friskLeft1.png", "tex/friskLeft0.png", "tex/friskLeft1.png"},			// Left
+	{"tex/friskBack0.png", "tex/friskBack1.png", "tex/friskBack2.png", "tex/friskBack3.png"}			// Up
 
 };
 
@@ -119,21 +119,23 @@ void init() {
 	srvInit();
 	aptInit();
 	hidInit();
+	//romfsInit();
 
 	// Starting audio service
 	csndInit();
 
 	// Configuring the right font to use (8bitoperator), and its proprieties
-	font = sftd_load_font_mem(eightbit_ttf, eightbit_ttf_size);
+	font = sftd_load_font_file("font/eightbit.ttf");
 
 	// Configuring graphics in general (images, textures, etc)
 	sf2d_set_clear_color(RGBA8 (0x00, 0x00, 0x00, 0xFF));
-	tex_torielHouse1 	= sfil_load_PNG_buffer(torielHouse1_png, SF2D_PLACE_RAM);
-	tex_torielHouse2 	= sfil_load_PNG_buffer(torielHouse2_png, SF2D_PLACE_RAM);
-	tex_torielHouse3 	= sfil_load_PNG_buffer(torielHouse3_png, SF2D_PLACE_RAM);
-	tex_torielHouse4 	= sfil_load_PNG_buffer(torielHouse4_png, SF2D_PLACE_RAM);
-	tex_torielHouse5 	= sfil_load_PNG_buffer(torielHouse5_png, SF2D_PLACE_RAM);
-	tex_torielHouse6 	= sfil_load_PNG_buffer(torielHouse6_png, SF2D_PLACE_RAM);
+	FILE *log = fopen("UT.log","w");
+	tex_torielHouse1 	= sfil_load_PNG_file("tex/torielHouse1.png", SF2D_PLACE_RAM);
+	tex_torielHouse2 	= sfil_load_PNG_file("tex/torielHouse2.png", SF2D_PLACE_RAM);
+	tex_torielHouse3 	= sfil_load_PNG_file("tex/torielHouse3.png", SF2D_PLACE_RAM);
+	tex_torielHouse4 	= sfil_load_PNG_file("tex/torielHouse4.png", SF2D_PLACE_RAM);
+	tex_torielHouse5 	= sfil_load_PNG_file("tex/torielHouse5.png", SF2D_PLACE_RAM);
+	tex_torielHouse6 	= sfil_load_PNG_file("tex/torielHouse6.png", SF2D_PLACE_RAM);
 
 	// Load Frisk textures
 	// Loop over every element in tex_arr_friskWalk and load the PNG buffer
@@ -143,7 +145,7 @@ void init() {
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
-			tex_arr_friskWalk[i][j] = sfil_load_PNG_buffer(friskFilenames[i][j], SF2D_PLACE_RAM);
+			tex_arr_friskWalk[i][j] = sfil_load_PNG_file(friskFilenames[i][j], SF2D_PLACE_RAM);
 		}
 	}
 

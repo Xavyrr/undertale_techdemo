@@ -29,7 +29,7 @@ include $(DEVKITARM)/3ds_rules
 TARGET		:=	undertale_techdemo
 BUILD		:=	build
 SOURCES		:=	source
-DATA		:=	data
+#ROMFS		:=	romfs
 INCLUDES	:=	include
 
 APP_TITLE		:= Undertale Tech Demo
@@ -122,6 +122,10 @@ ifeq ($(strip $(NO_SMDH)),)
 	export _3DSXFLAGS += --smdh=$(CURDIR)/$(TARGET).smdh
 endif
 
+ifneq ($(ROMFS),)
+	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
+endif
+
 .PHONY: $(BUILD) clean all
 
 #---------------------------------------------------------------------------------
@@ -187,14 +191,7 @@ $(OUTPUT).elf	:	$(OFILES)
 #---------------------------------------------------------------------------------
 %.jpeg.o:	%.jpeg
 #---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
-
-#---------------------------------------------------------------------------------
-%.png.o	:	%.png
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
+	@echo $(notdir $<)friskBack0_png
 
 # WARNING: This is not the right way to do this! TODO: Do it right!
 #---------------------------------------------------------------------------------
