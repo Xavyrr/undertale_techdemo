@@ -175,7 +175,7 @@ void init() {
 		tex_torielHouse3,
 		0,
 		75,
-		796,  // x2 // Originally 340, but changed so that transition to room 4 can't happen.
+		796,
 		205,
 		0,
 		72,
