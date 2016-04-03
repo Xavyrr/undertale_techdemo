@@ -11,6 +11,11 @@
 #include <time.h>
 
 // Sound/Music stuff
+#include "tremor/ivorbiscodec.h"
+#include "tremor/ivorbisfile.h"
+OggVorbis_File vf;
+char pcmout[4096];
+bool mus_failure = false;
 u8* buffer;				// Buffering audio file
 u32 size;				// Audio file size
 
@@ -153,16 +158,38 @@ void init() {
 	rooms[3] = (struct room){
 		tex_torielHouse3,
 		0,
-		75,
-		796,
-		205,
+		130,
+		710,
+		175,
 		0,
 		72,
 		true,
 	};
 
 	// Play music
-	audio_load("sound/music/home.bin");
+	//audio_load("sound/music/home.bin");
+	FILE *home = fopen("sound/music/home.ogg", "rb"); // Copied from ivorbisfile_example.c
+	if (ov_open(home, &vf, NULL, 0)) {
+		mus_failure = true;
+		return;
+	}
+	{
+		long size = (long)ov_pcm_total(&vf,-1);
+		buffer = linearAlloc(size * sizeof(pcmout));
+	}
+	bool eof;
+	int current_section;
+	while (!eof) {
+		long ret=ov_read(&vf, pcmout, sizeof(pcmout), &current_section);
+		if (ret == 0) {
+			eof = true;
+		} else if (ret < 0) {
+			mus_failure = true;
+			break;
+		} else {
+			memcpy(pcmout, buffer+current_section*sizeof(pcmout), sizeof(pcmout));
+		}
+	}
 }
 
 void render() {
@@ -192,8 +219,10 @@ void render() {
 		// Debug stuff
 		sftd_draw_textf(font, 10, 10, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
 		sftd_draw_textf(font, 10, 30, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
-		sftd_draw_textf(font, 10, 50, RGBA8(255, 0, 0, 255), 12, "Player X: %f, Y: %f", player_x, player_y);
-		sftd_draw_textf(font, 10, 70, RGBA8(255, 0, 0, 255), 12, "Screen X: %f, Y: %f", screen_x, screen_y);
+		sftd_draw_textf(font, 10, 50, RGBA8(255, 255, 255, 255), 12, "Player X: %f, Y: %f", player_x, player_y);
+		sftd_draw_textf(font, 10, 70, RGBA8(255, 255, 255, 255), 12, "Screen X: %f, Y: %f", screen_x, screen_y);
+		if (mus_failure)
+			sftd_draw_text(font, 10, 90, RGBA8(255, 0, 0, 255), 12, "Music FAILED to load!");
 
 		// End frame
 		sf2d_end_frame();

@@ -28,7 +28,7 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	undertale_techdemo
 BUILD		:=	build
-SOURCES		:=	source
+SOURCES		:=	source source/tremor
 #ROMFS		:=	romfs
 INCLUDES	:=	include
 
@@ -53,7 +53,7 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lsfil -lpng -lsftd -lfreetype -lz -lsf2d -lctru -lm
+LIBS	:= -logg -lsfil -lpng -lsftd -lfreetype -lz -lsf2d -lctru -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
