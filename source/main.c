@@ -13,7 +13,6 @@
 // Sound/Music stuff
 #include "tremor/ivorbiscodec.h"
 #include "tremor/ivorbisfile.h"
-OggVorbis_File vf;
 char pcmout[4096];
 bool mus_failure = false;
 u8* buffer;				// Buffering audio file
@@ -169,6 +168,7 @@ void init() {
 	// Play music
 	//audio_load("sound/music/home.bin");
 	FILE *home = fopen("sound/music/home.ogg", "rb"); // Copied from ivorbisfile_example.c
+	OggVorbis_File vf;
 	if (ov_open(home, &vf, NULL, 0)) {
 		mus_failure = true;
 		return;
@@ -190,6 +190,8 @@ void init() {
 			memcpy(pcmout, buffer+current_section*sizeof(pcmout), sizeof(pcmout));
 		}
 	}
+	ov_clear(&vf);
+	csndPlaySound (8, SOUND_FORMAT_16BIT | SOUND_REPEAT, 44100, 1, 0, buffer, buffer, sizeof(buffer));
 }
 
 void render() {
