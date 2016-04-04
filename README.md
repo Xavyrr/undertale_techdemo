@@ -16,7 +16,10 @@ NOTE: To make this demo to work correctly, copy these files:
 
 And place these files in a folder called "undertale_techdemo" (if you don't have it, create it on the "3ds" folder).
 
-If you are looking to compile the demo yourself, please run `make clean`, as otherwise there may be issues.
+The eventual goal is to get it to take unmodified files from the actual game and not be distributing modified versions of art/sound. For now, I'll include some assets in the actual releases for now. If you wish to grab the music files which are not on git, grab the Undertale Demo and grab house1.ogg. Though, hopefully all of the music in the demo will eventually be used.
+
+If you are looking to compile the demo yourself, please run `make clean`, as otherwise there may be issues. (Or, at least, so said the person who had this previously.)
+
 A binary release of the current progress comes when I feel like it.
 
 ---

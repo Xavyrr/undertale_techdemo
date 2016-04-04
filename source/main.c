@@ -155,7 +155,7 @@ void init() {
 	};
 
 	// Play music
-	audio_load_ogg("sound/music/home.ogg");
+	audio_load_ogg("sound/music/house1.ogg");
 }
 
 void render() {
