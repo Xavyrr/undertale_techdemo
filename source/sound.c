@@ -56,9 +56,11 @@ void audio_load_ogg(const char *audio) {
 	ov_clear(&vf);
     waveBuf.data_vaddr = &buffer[0];
     waveBuf.nsamples = size;
+    waveBuf.looping = true;
 
     ndspChnWaveBufAdd(0, &waveBuf);
 }
+
 
 // Audio stop
 void audio_stop(void) {
