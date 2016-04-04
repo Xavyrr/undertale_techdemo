@@ -89,7 +89,7 @@ int  easterPage = 0;
 void init() {
 	// Starting services
 	sf2d_init();
-	sf2d_set_vblank_wait(0);
+	functsf2d_set_vblank_wait(0);
 	sftd_init();
 	srvInit();
 	aptInit();
