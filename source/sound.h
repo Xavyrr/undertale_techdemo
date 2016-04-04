@@ -10,6 +10,7 @@ extern u8* buffer;			// Buffering audio file
 extern unsigned long size;	// Audio file size
 extern unsigned long buf_pos;
 
+void audio_init(void);
 void audio_load_ogg(const char *audio);
 void audio_stop(void);
 

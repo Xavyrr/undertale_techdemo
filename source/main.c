@@ -89,16 +89,13 @@ int  easterPage = 0;
 void init() {
 	// Starting services
 	sf2d_init();
-	functsf2d_set_vblank_wait(0);
+	sf2d_set_vblank_wait(0);
 	sftd_init();
 	srvInit();
 	aptInit();
 	hidInit();
+	audio_init();
 	//romfsInit();
-
-	// Starting audio service
-	csndInit();
-	ndspInit();
 
 	// Configuring the right font to use (8bitoperator), and its proprieties
 	font = sftd_load_font_file("font/eightbit.ttf");
