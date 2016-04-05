@@ -191,8 +191,10 @@ void render() {
 				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Screen X: %f, Y: %f", screen_x, screen_y);
 				break;
 			case 1:
-				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Size: %lu", size);
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Samples: %lu", buf_samples);
 				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Buffer Position: %lu", buf_pos);
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Amount: %li", mus_failure);
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "EOF: %d", eof);
 				break;
 		}
 		// End frame
@@ -223,6 +225,7 @@ int main(int argc, char **argv) {
 
 	// Main loop
 	while (aptMainLoop()) {
+		audio_loop(4096);
 
 		// Verify button presses
 		hidScanInput();
