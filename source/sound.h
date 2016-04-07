@@ -14,7 +14,7 @@ extern bool eof;
 
 void audio_init(void);
 void audio_load_ogg(const char *audio);
-void audio_loop(long size);
+void audio_loop(void);
 void audio_stop(void);
 
 #endif

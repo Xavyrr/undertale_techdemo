@@ -171,12 +171,11 @@ void render() {
 	// End frame
 	sf2d_end_frame();
 
+	// Start frame on the bottom screen
+	sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+
 	// If the easter egg variable is true, then activate it
 	if (easterEgg) {
-
-		// Start frame on the bottom screen
-		sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
-
 		// Draw the easter egg
 		sftd_draw_text(font, 10, 140,  RGBA8(255, 0, 0, 255), 16, "* You IDIOT.");
 		sftd_draw_text(font, 10, 170,  RGBA8(255, 255, 255, 255), 16, "* Nah, this is just");
@@ -197,10 +196,9 @@ void render() {
 				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "EOF: %d", eof);
 				break;
 		}
-		// End frame
-		sf2d_end_frame();
-
 	};
+	// End frame
+	sf2d_end_frame();
 }
 
 // Timer for the player's speed
@@ -225,7 +223,7 @@ int main(int argc, char **argv) {
 
 	// Main loop
 	while (aptMainLoop()) {
-		audio_loop(4096);
+		audio_loop();
 
 		// Verify button presses
 		hidScanInput();
@@ -433,7 +431,6 @@ int main(int argc, char **argv) {
 	sf2d_fini();
 	sftd_fini();
 	audio_stop();
-	csndExit();
 	hidExit();
 	aptExit();
 	srvExit();

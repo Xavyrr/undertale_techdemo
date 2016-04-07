@@ -49,19 +49,21 @@ void audio_load_ogg(const char *audio) {
 
 	int i;
 
-	for (i=0;i<6;++i) {
-		audio_loop(4096);
+	for (i=0;i<5;++i) {
+		audio_loop();
 	}
 
 	ndspChnWaveBufAdd(0, &waveBuf);
 }
 
-void audio_loop(long size) {
+void audio_loop() {
 	if (eof || mus_failure) return;
+
+	long size;
 
 	{
 		long tmp = buf_samples * 4 - buf_pos;
-		size = (tmp < size) ? tmp : size; // min(tmp, size);
+		size = (tmp < 4096) ? tmp : 4096; // min(tmp, size);
 	}
 
 	long amount = ov_read(&vf, buffer+buf_pos, size, &section);
