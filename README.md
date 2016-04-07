@@ -4,7 +4,7 @@ We'll see how long this lasts, but for now, I'm making additions to this.
 
 Undertale Techdemo for 3DS
 
-Made with ctrulib, sf2dlib, sftdlib, sfillib, and some sound examples from GBATemp (clank201).
+Made with ctrulib, sf2dlib, sftdlib, sfillib, libogg, Tremor, and some sound examples written by MerryMage.
 
 All resources and sounds from Undertale by Toby Fox.
 
