@@ -48,6 +48,7 @@ Temporary Items
 
 build
 other
+.tremor_patch
 
 # 3DS binary files
 *.3dsx

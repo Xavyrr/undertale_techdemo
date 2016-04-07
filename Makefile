@@ -131,15 +131,19 @@ endif
 #---------------------------------------------------------------------------------
 all: $(BUILD)
 
-$(BUILD):
-	#@(cd $(CURDIR)/source/tremor;git reset --hard;git apply ../*.patch;)
+$(BUILD): .tremor_patch
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
-
+#---------------------------------------------------------------------------------
+.tremor_patch:
+	@echo Patching tremor...
+	@(cd $(CURDIR)/source/tremor;git apply ../*.patch;)
+	@touch .tremor_patch
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET)-strip.elf $(TARGET).cia $(TARGET).3ds
+	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET)-strip.elf $(TARGET).cia $(TARGET).3ds .tremor_patch
+	@(cd $(CURDIR)/source/tremor;git reset --hard;)
 #---------------------------------------------------------------------------------
 $(TARGET)-strip.elf: $(BUILD)
 	@$(STRIP) $(TARGET).elf -o $(TARGET)-strip.elf

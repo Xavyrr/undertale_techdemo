@@ -20,6 +20,8 @@ The eventual goal is to get it to take unmodified files from the actual game and
 
 If you are looking to compile the demo yourself, please run `make clean`, as otherwise there may be issues. (Or, at least, so said the person who had this previously.)
 
+If you get an error while compiling about there not being a rule to make 'ivorbisfile_example.o', just run make again.
+
 A binary release of the current progress comes when I feel like it.
 
 ---
