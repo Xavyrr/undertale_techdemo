@@ -12,17 +12,20 @@
 
 #include "sound.h"
 
+typedef struct position {
+	float x;
+	float y;
+} position;
+
 // Room variables
 int room 		= 1;	// General info
 int roomEnter 	= 0;	// Entrances
 
 // Player variables
-int player 		= 0;		// General info
+int player 		= 0;	// General info
 int playerDir	= 0;	// Direction
-float player_x;			// X coordinate
-float player_y;			// Y coordinate
-float screen_x;
-float screen_y;
+position player_pos = {0, 0};
+position camera_pos = {0, 0};
 float hsp 		= 0;	// Horizontal speed
 float vsp 		= 0;	// Vertical speed
 
@@ -60,14 +63,16 @@ char* friskFilenames[4][4] = {
 
 };
 
+struct exit {
+	int room_id;
+	position entrance;
+	position collision[2];
+};
+
 struct room { // TODO: Move all of the room data into another file.
 	sf2d_texture *tex;
-	float x1;
-	float y1;
-	float x2;
-	float y2;
-	int tex_x;
-	int tex_y;
+	position collision[2];
+	position tex_pos;
 	bool scrolling;
 };
 
@@ -125,32 +130,29 @@ void init() {
 	// TODO: Move stuff around so that there is a room 0.
 	rooms[1] = (struct room){
 		tex_torielHouse1, // tex // TODO: Be able to reference the textures w/o initializing them first?
-		77,   // x1
-		60,   // y1
-		305,  // x2
-		188,  // y2
-		40,   // tex_x
-		0,    // tex_y
-		false,// scrolling
+		{ // collision
+			{77,  60}, // pos0
+			{305, 188} // pos1
+		},
+		{40, 0}, // tex_pos
+		false, // scrolling
 	};
 	rooms[2] = (struct room){
 		tex_torielHouse2,
-		60,
-		69,
-		320,
-		190,
-		40,
-		0,
+		{
+			{60,  69},
+			{320, 190}
+		},
+		{40, 0},
 		false,
 	};
 	rooms[3] = (struct room){
 		tex_torielHouse3,
-		0,
-		130,
-		710,
-		175,
-		0,
-		72,
+		{
+			{0, 130},
+			{710, 175}
+		},
+		{0, 72},
 		true,
 	};
 
@@ -163,10 +165,12 @@ void render() {
 	sf2d_start_frame(GFX_TOP, GFX_LEFT);
 
 	// Draw the background (or in this case, the room)
-	sf2d_draw_texture(rooms[room].tex, rooms[room].tex_x + (int)screen_x, rooms[room].tex_y + (int)screen_y);
+	sf2d_draw_texture(rooms[room].tex, rooms[room].tex_pos.x + (int)camera_pos.x,
+									   rooms[room].tex_pos.y + (int)camera_pos.y);
 
 	// Draw the player's sprite
-	sf2d_draw_texture(curr_tex, (int)player_x + (int)screen_x, (int)player_y + (int)screen_y);
+	sf2d_draw_texture(curr_tex, (int)player_pos.x + (int)camera_pos.x,
+								(int)player_pos.y + (int)camera_pos.y);
 
 	// End frame
 	sf2d_end_frame();
@@ -186,8 +190,8 @@ void render() {
 			case 0:
 				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
 				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
-				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Player X: %f, Y: %f", player_x, player_y);
-				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Screen X: %f, Y: %f", screen_x, screen_y);
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Player X: %f, Y: %f", player_pos.x, player_pos.y);
+				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Screen X: %f, Y: %f", camera_pos.x, camera_pos.y);
 				break;
 			case 1:
 				sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Samples: %lu", buf_samples);
@@ -245,11 +249,10 @@ int main(int argc, char **argv) {
 
 		// Change pages for the easterEgg/debug menu.
 		else if (kDown & KEY_R) {
-			if (++easterPage >= MAX_PAGE) easterPage = MAX_PAGE;
+			if (++easterPage >= MAX_PAGE) easterPage = 0;
 		}
-
 		else if (kDown & KEY_L) {
-			if (--easterPage <= 0) easterPage = 0;
+			if (--easterPage <= 0) easterPage = MAX_PAGE;
 		}
 
 
@@ -299,25 +302,24 @@ int main(int argc, char **argv) {
 
 		do {
 			// Collision test before movement
-			float tmp_x = player_x + hsp * dt;
-			float tmp_y = player_y + vsp * dt;
-			if (tmp_x >= rooms[room].x2 || \
-				tmp_x <= rooms[room].x1 || \
-				tmp_y >= rooms[room].y2 || \
-				tmp_y <= rooms[room].y1) break; // Should probably just use a goto. Oh well.
+			float tmp_x = player_pos.x + hsp * dt;
+			float tmp_y = player_pos.y + vsp * dt;
+			if (tmp_x >= rooms[room].collision[1].x || \
+				tmp_x <= rooms[room].collision[0].x || \
+				tmp_y >= rooms[room].collision[1].y || \
+				tmp_y <= rooms[room].collision[0].y) break; // Should probably just use a goto. Oh well.
 
 			// Actual movement calculation
-			if (rooms[room].scrolling) {
+			if (rooms[room].scrolling) { // TODO: Preform scrolling that stays still.
 				if (tmp_x >= 300) {
-					screen_x = 300 - tmp_x;
+					camera_pos.x = 300 - tmp_x;
 				}
 				if (tmp_y <= 50) {
-					screen_y = 50 - tmp_y;
+					camera_pos.y = 50 - tmp_y;
 				}
-			} else screen_x = screen_y = 0;
+			} else camera_pos.x = camera_pos.y = 0;
 
-			player_x = tmp_x;
-			player_y = tmp_y;
+			player_pos = (struct position){tmp_x, tmp_y};
 		} while (0);
 
 
@@ -336,71 +338,71 @@ int main(int argc, char **argv) {
 		// Localization/rooms // TODO: Create exit struct.
 		if (room == 1) {
 			if (roomEnter == 0) {
-				player_x 	= 190;
-				player_y 	= 160;
+				player_pos.x	= 190;
+				player_pos.y	= 160;
 
 				roomEnter	= 255;
 			}
 
 			if (roomEnter == 1) {
-				player_x 	= 78;
-				player_y 	= 160;
+				player_pos.x	= 78;
+				player_pos.y	= 160;
 
-				roomEnter 	= 255;
+				roomEnter	= 255;
 			}
 
 			if (roomEnter == 2) {
-				player_x 	= 304;
-				player_y 	= 160;
+				player_pos.x	= 304;
+				player_pos.y	= 160;
 
-				roomEnter 	= 255;
+				roomEnter	= 255;
 			}
 
-			if (player_y >= 145 && player_y <= 195 && player_x <= 78 && playerDir == FRISK_LEFT) { // this needs work!
-				room 		= 2;
+			if (player_pos.y >= 145 && player_pos.y <= 195 && player_pos.x <= 78 && playerDir == FRISK_LEFT) { // this needs work!
+				room		= 2;
 				roomEnter 	= 0;
 			}
 
-			if (player_y >= 145 && player_y <= 195 && player_x >= 281 && playerDir == FRISK_RIGHT) { // this needs work!
-				room 		= 3;
-				roomEnter 	= 0;
+			if (player_pos.y >= 145 && player_pos.y <= 195 && player_pos.x >= 281 && playerDir == FRISK_RIGHT) { // this needs work!
+				room		= 3;
+				roomEnter	= 0;
 			}
 
 		}
 
 		if (room == 2) {
 			if (roomEnter == 0) {
-				player_x 	= 319;
-				player_y 	= 160;
+				player_pos.x	= 319;
+				player_pos.y	= 160;
 
-				roomEnter 	= 255;
+				roomEnter	= 255;
 			}
 
-			if (player_y >= 145 && player_y <= 195 && player_x >= 319 && playerDir == FRISK_RIGHT) { // this needs work!
+			if (player_pos.y >= 145 && player_pos.y <= 195 && player_pos.x >= 319 && playerDir == FRISK_RIGHT) { // this needs work!
 				room = 1;
-				roomEnter 	= 1;
+				roomEnter	= 1;
 			}
 
 		}
 
 		if (room == 3) {
 			if (roomEnter == 0) {
-				player_x 	= 41;
-				player_y 	= 131;
+				player_pos.x	= 41;
+				player_pos.y	= 131;
 
-				roomEnter 	= 255;
+				roomEnter	= 255;
 			}
 
 			if (roomEnter == 1) {
-				player_x 	= 338;
-				player_y 	= 131;
+				player_pos.x	= 338;
+				player_pos.y	= 131;
 
-				roomEnter 	= 255;
+				roomEnter	= 255;
 			}
 
-			if (player_y >= 75 && player_y <= 205 && player_x <= 5 && playerDir == FRISK_LEFT) { // this needs work!
-				room 		= 1;
-				roomEnter 	= 2;
+			if (player_pos.y >= 75 && player_pos.y <= 205 && player_pos.x <= 5 && playerDir == FRISK_LEFT) { // this needs work!
+				room		= 1;
+				roomEnter	= 2;
 			}
 		}
 
