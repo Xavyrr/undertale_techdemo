@@ -74,6 +74,8 @@ struct room { // TODO: Move all of the room data into another file.
 	position collision[2];
 	position tex_pos;
 	bool scrolling;
+	unsigned int num_exit;
+	struct exit *exits;
 };
 
 struct room rooms[4];
@@ -136,7 +138,35 @@ void init() {
 		},
 		{40, 0}, // tex_pos
 		false, // scrolling
+		3, // num_exits
 	};
+	rooms[1].exits = malloc(rooms[1].num_exit * sizeof(struct exit));
+	rooms[1].exits[0] = (struct exit){ // HACK: Player spawns at 0, 0 by default. Rather than fixing this, just teleport!
+							1,
+							{190, 160},
+							{
+								{-1, -1},
+								{1, 1}
+							}
+						};
+	rooms[1].exits[1] = (struct exit){ // 1
+							2, // room_id
+							{319, 160}, // entrance
+							{ // collision
+								{0, 145}, // pos1
+								{78,  195}  // pos2
+							}
+						};
+
+	rooms[1].exits[2] = (struct exit){
+							3,
+							{41, 131},
+							{
+								{281, 145},
+								{300, 195}
+							}
+						};
+
 	rooms[2] = (struct room){
 		tex_torielHouse2,
 		{
@@ -145,7 +175,18 @@ void init() {
 		},
 		{40, 0},
 		false,
+		1,
 	};
+	rooms[2].exits = malloc(rooms[2].num_exit * sizeof(struct exit));
+	rooms[2].exits[0] = (struct exit){
+							1,
+							{78, 160},
+							{
+								{319, 145},
+								{400, 195}
+							}
+						};
+
 	rooms[3] = (struct room){
 		tex_torielHouse3,
 		{
@@ -154,7 +195,17 @@ void init() {
 		},
 		{0, 72},
 		true,
+		1,
 	};
+	rooms[3].exits = malloc(rooms[3].num_exit * sizeof(struct exit));
+	rooms[3].exits[0] = (struct exit){
+							1,
+							{280, 160},
+							{
+								{-5, 75},
+								{5, 205}
+							}
+						};
 
 	// Play music
 	audio_load_ogg("sound/music/house1.ogg");
@@ -249,10 +300,10 @@ int main(int argc, char **argv) {
 
 		// Change pages for the easterEgg/debug menu.
 		else if (kDown & KEY_R) {
-			if (++easterPage >= MAX_PAGE) easterPage = 0;
+			if (++easterPage > MAX_PAGE) easterPage = 0;
 		}
 		else if (kDown & KEY_L) {
-			if (--easterPage <= 0) easterPage = MAX_PAGE;
+			if (--easterPage < 0) easterPage = MAX_PAGE;
 		}
 
 
@@ -335,75 +386,18 @@ int main(int argc, char **argv) {
 			sprTimer -= 4;
 		}
 
-		// Localization/rooms // TODO: Create exit struct.
-		if (room == 1) {
-			if (roomEnter == 0) {
-				player_pos.x	= 190;
-				player_pos.y	= 160;
+		int i;
 
-				roomEnter	= 255;
-			}
-
-			if (roomEnter == 1) {
-				player_pos.x	= 78;
-				player_pos.y	= 160;
-
-				roomEnter	= 255;
-			}
-
-			if (roomEnter == 2) {
-				player_pos.x	= 304;
-				player_pos.y	= 160;
-
-				roomEnter	= 255;
-			}
-
-			if (player_pos.y >= 145 && player_pos.y <= 195 && player_pos.x <= 78 && playerDir == FRISK_LEFT) { // this needs work!
-				room		= 2;
-				roomEnter 	= 0;
-			}
-
-			if (player_pos.y >= 145 && player_pos.y <= 195 && player_pos.x >= 281 && playerDir == FRISK_RIGHT) { // this needs work!
-				room		= 3;
-				roomEnter	= 0;
-			}
-
-		}
-
-		if (room == 2) {
-			if (roomEnter == 0) {
-				player_pos.x	= 319;
-				player_pos.y	= 160;
-
-				roomEnter	= 255;
-			}
-
-			if (player_pos.y >= 145 && player_pos.y <= 195 && player_pos.x >= 319 && playerDir == FRISK_RIGHT) { // this needs work!
-				room = 1;
-				roomEnter	= 1;
-			}
-
-		}
-
-		if (room == 3) {
-			if (roomEnter == 0) {
-				player_pos.x	= 41;
-				player_pos.y	= 131;
-
-				roomEnter	= 255;
-			}
-
-			if (roomEnter == 1) {
-				player_pos.x	= 338;
-				player_pos.y	= 131;
-
-				roomEnter	= 255;
-			}
-
-			if (player_pos.y >= 75 && player_pos.y <= 205 && player_pos.x <= 5 && playerDir == FRISK_LEFT) { // this needs work!
-				room		= 1;
-				roomEnter	= 2;
-			}
+		for (i = 0; i < rooms[room].num_exit; ++i) {
+			struct exit next = rooms[room].exits[i];
+			if (player_pos.x >= next.collision[0].x &&
+				player_pos.y >= next.collision[0].y &&
+				player_pos.x <= next.collision[1].x &&
+				player_pos.y <= next.collision[1].y) {
+					room = next.room_id;
+					player_pos = next.entrance;
+					break;
+				}
 		}
 
 		render();
