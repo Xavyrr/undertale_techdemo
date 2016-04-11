@@ -17,6 +17,9 @@ typedef struct position {
     float y;
 } position;
 
+// Sound variable
+struct sound *home;
+
 // Room variables
 int room      = 1; // General info
 int roomEnter = 0; // Entrances
@@ -210,7 +213,9 @@ void init() {
     };
 
     // Play music
-    audio_load_ogg("sound/music/house1.ogg");
+    home = sound_create();
+    if (home != NULL) audio_load_ogg("sound/music/house1.ogg", home);
+    else home->status = -1;
 }
 
 void render() {
@@ -247,10 +252,9 @@ void render() {
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Screen X: %f, Y: %f", camera_pos.x, camera_pos.y);
                 break;
             case 1:
-                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Samples: %lu", buf_samples);
-                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Buffer Position: %lu", buf_pos);
-                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Amount: %li", mus_failure);
-                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "EOF: %d", eof);
+                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Samples: %lu", home->waveBuf.nsamples);
+                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Buffer Position: %lu", home->pos);
+                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Status: %li", home->status);
                 break;
         }
     };
@@ -280,7 +284,7 @@ int main(int argc, char **argv) {
 
     // Main loop
     while (aptMainLoop()) {
-        audio_loop();
+        if (home->status > 0) sound_loop(home);
 
         // Verify button presses
         hidScanInput();
@@ -428,6 +432,7 @@ int main(int argc, char **argv) {
     // Exit services
     sf2d_fini();
     sftd_fini();
+    sound_stop(home);
     audio_stop();
     hidExit();
     aptExit();
