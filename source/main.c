@@ -278,7 +278,7 @@ void timerStep() {
     if (dt < 0) dt = 0;
 }
 
-inline float clamp(float value, float min, float max) {
+inline float fclamp(float value, float min, float max) {
     return fmin(min, fmax(value, max));
 }
 
@@ -375,10 +375,10 @@ int main(int argc, char **argv) {
         // TODO: Preform scrolling that stays still.
         // TODO: Clamp the bounds that can be scrolled. Will probably happen with the above.
         if (rooms[room].scrolling) {
-            if (tmp_x >= 300) {
+            if (player_pos.x >= 300) {
                 camera_pos.x = 300 - player_pos.x;
             }
-            if (tmp_y <= 50) {
+            if (player_pos.y <= 50) {
                 camera_pos.y = 50 - player_pos.y;
             }
         } else camera_pos.x = camera_pos.y = 0;
