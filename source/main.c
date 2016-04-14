@@ -39,10 +39,10 @@ int textWidth  = 0; // Width
 int textHeight = 0; // Height
 
 // Timing variables
-int    prevTime = 0; // Previous time
-int    currTime = 0; // Current time
-float  dt       = 0; // Movement timing
-double sprTimer = 0; // Sprite timing
+int   prevTime = 0; // Previous time
+int   currTime = 0; // Current time
+float dt       = 0; // Movement timing
+float sprTimer = 0; // Sprite timing
 
 // sf2d_texture room_bg[6];
 
@@ -69,7 +69,7 @@ char* friskFilenames[4][4] = {
 struct exit {
     int room_id;
     position entrance;
-    position collision[2];
+    position collision[2]; // TODO: Consider replacing array with positions min and max?
 };
 
 struct room { // TODO: Move all of the room data into another file.
@@ -119,9 +119,9 @@ void init() {
     tex_torielHouse5 = sfil_load_PNG_file("tex/torielHouse5.png", SF2D_PLACE_RAM);
     tex_torielHouse6 = sfil_load_PNG_file("tex/torielHouse6.png", SF2D_PLACE_RAM);
 
-    // Load Frisk textures
-    // Loop over every element in tex_arr_friskWalk and load the PNG buffer
-    // Because of C99, you have to declare the loop variables before the loop
+    /* Load Frisk textures
+       Loop over every element in tex_arr_friskWalk and load the PNG buffer
+       Because we're using C99 instad of C++, you have to declare the loop variables before the loop */
 
     int i, j;
 
@@ -278,6 +278,10 @@ void timerStep() {
     if (dt < 0) dt = 0;
 }
 
+inline float clamp(float value, float min, float max) {
+    return fmin(min, fmax(value, max));
+}
+
 // Main part of the coding, where everything works (or not)
 int main(int argc, char **argv) {
     init();
@@ -357,28 +361,27 @@ int main(int argc, char **argv) {
             }
         }
 
-        do {
-            // Collision test before movement
-            float tmp_x = player_pos.x + hsp * dt;
-            float tmp_y = player_pos.y + vsp * dt;
-            if (tmp_x >= rooms[room].collision[1].x || \
-                tmp_x <= rooms[room].collision[0].x || \
-                tmp_y >= rooms[room].collision[1].y || \
-                tmp_y <= rooms[room].collision[0].y) break; // Should probably just use a goto. Oh well.
+        // Movement calculation... AND proper room colision.
+        // TODO: Consider a function for translating and/or clamping coordinates directly?
+        player_pos.x = fclamp(player_pos.x + hsp * dt,
+                              rooms[room].collision[0].x,
+                              rooms[room].collision[1].x);
 
-            // Actual movement calculation
-            if (rooms[room].scrolling) { // TODO: Preform scrolling that stays still.
-                if (tmp_x >= 300) {
-                    camera_pos.x = 300 - tmp_x;
-                }
-                if (tmp_y <= 50) {
-                    camera_pos.y = 50 - tmp_y;
-                }
-            } else camera_pos.x = camera_pos.y = 0;
+        player_pos.y = fclamp(player_pos.y + vsp * dt,
+                              rooms[room].collision[0].y,
+                              rooms[room].collision[1].y);
 
-            player_pos = (struct position){tmp_x, tmp_y};
-        } while (0);
-
+        // Scrolling calculation.
+        // TODO: Preform scrolling that stays still.
+        // TODO: Clamp the bounds that can be scrolled. Will probably happen with the above.
+        if (rooms[room].scrolling) {
+            if (tmp_x >= 300) {
+                camera_pos.x = 300 - player_pos.x;
+            }
+            if (tmp_y <= 50) {
+                camera_pos.y = 50 - player_pos.y;
+            }
+        } else camera_pos.x = camera_pos.y = 0;
 
         // Player sprites
         if (hsp == 0 && vsp == 0) curr_tex = tex_arr_friskWalk[playerDir][0];
