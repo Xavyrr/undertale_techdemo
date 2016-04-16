@@ -9,13 +9,9 @@
 #include <math.h>
 #include <time.h>
 
+#include "common.h"
 #include "sound.h"
 #include "texture.h"
-
-typedef struct position {
-    float x;
-    float y;
-} position;
 
 // Sound variable
 struct sound *home;
@@ -44,20 +40,14 @@ int   currTime = 0; // Current time
 float dt       = 0; // Movement timing
 float sprTimer = 0; // Sprite timing
 
-// sf2d_texture room_bg[6];
-
 // Textures and fonts
 sf2d_texture *curr_tex;
-sf2d_texture *tex_torielHouse1;
-sf2d_texture *tex_torielHouse2;
-sf2d_texture *tex_torielHouse3;
-sf2d_texture *tex_torielHouse4;
-sf2d_texture *tex_torielHouse5;
-sf2d_texture *tex_torielHouse6;
 sftd_font    *font;
 
 // Multidirectional array to store all player's walking textures
 sf2d_texture* tex_arr_friskWalk[4][4];
+
+// sf2d_texture room_bg[6];
 
 char* friskFilenames[4][4] = {
     {"friskRight0", "friskRight1", "friskRight0", "friskRight1"},// Right
@@ -73,9 +63,8 @@ struct exit {
 };
 
 struct room { // TODO: Move all of the room data into another file.
-    sf2d_texture *tex;
+    struct texture bg;
     position collision[2];
-    position tex_pos;
     bool scrolling;
     unsigned int num_exit;
     struct exit *exits;
@@ -113,16 +102,9 @@ void init() {
     // Configuring graphics in general (images, textures, etc)
     sf2d_set_clear_color(RGBA8 (0x00, 0x00, 0x00, 0xFF));
 
-    tex_torielHouse1 = loadTexture("torielHouse1");
-    tex_torielHouse2 = loadTexture("torielHouse2");
-    tex_torielHouse3 = loadTexture("torielHouse3");
-    tex_torielHouse4 = loadTexture("torielHouse4");
-    tex_torielHouse5 = loadTexture("torielHouse5");
-    tex_torielHouse6 = loadTexture("torielHouse6");
-
     /* Load Frisk textures
        Loop over every element in tex_arr_friskWalk and load the PNG buffer
-       Because we're using C99 instad of C++, you have to declare the loop variables before the loop */
+       Because we're using C99 instad of C++, you have to declare the loop variables before the loop. */
 
     int i, j;
 
@@ -135,12 +117,15 @@ void init() {
     // Construct rooms. // TODO: Move to another file.
     // TODO: Move stuff around so that there is a room 0.
     rooms[1] = (struct room){
-        tex_torielHouse1, // tex // TODO: Be able to reference the textures w/o initializing them first?
+        { // bg
+            "torielHouse1", //name
+            {40, 0}, // pos
+             NULL // The pointer to the texture. May not need to specify, but just in case...
+        },
         { // collision
             {77,  60}, // pos0
             {305, 188} // pos1
         },
-        {40, 0}, // tex_pos
         false, // scrolling
         3, // num_exits
     };
@@ -172,12 +157,11 @@ void init() {
     };
 
     rooms[2] = (struct room){
-        tex_torielHouse2,
+        {"torielHouse2", {40, 0}, NULL},
         {
             {60,  69},
             {320, 190}
         },
-        {40, 0},
         false,
         1,
     };
@@ -193,12 +177,11 @@ void init() {
     };
 
     rooms[3] = (struct room){
-        tex_torielHouse3,
+        {"torielHouse3", {0, 72}, NULL},
         {
             {0, 130},
             {710, 175}
         },
-        {0, 72},
         true,
         1,
     };
@@ -212,6 +195,10 @@ void init() {
             {5, 205}
         }
     };
+
+    // Reusing 'i' from above.
+    // Load room textures.
+    for (i=1; i <= 3; ++i) rooms[i].bg.tex = loadTexture(rooms[i].bg.name);
 
     // TODO: Add actual save loading logic. For now, just assume this room.
     player_pos = rooms[room].exits[0].entrance;
@@ -227,8 +214,8 @@ void render() {
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
 
     // Draw the background (or in this case, the room)
-    sf2d_draw_texture(rooms[room].tex, rooms[room].tex_pos.x + (int)camera_pos.x,
-                                       rooms[room].tex_pos.y + (int)camera_pos.y);
+    sf2d_draw_texture(rooms[room].bg.tex, rooms[room].bg.pos.x + (int)camera_pos.x,
+                                       rooms[room].bg.pos.y + (int)camera_pos.y);
 
     // Draw the player's sprite
     sf2d_draw_texture(curr_tex, (int)player_pos.x + (int)camera_pos.x,
@@ -422,18 +409,16 @@ int main(int argc, char **argv) {
     // Free images/textures/fonts from memory
     int i, j;
 
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++) {
+    for (i = 0; i < 4; ++i) {
+        for (j = 0; j < 4; ++j) {
             sf2d_free_texture(tex_arr_friskWalk[i][j]);
         }
     }
 
-    sf2d_free_texture(tex_torielHouse1);
-    sf2d_free_texture(tex_torielHouse2);
-    sf2d_free_texture(tex_torielHouse3);
-    sf2d_free_texture(tex_torielHouse4);
-    sf2d_free_texture(tex_torielHouse5);
-    sf2d_free_texture(tex_torielHouse6);
+    for (i = 1; i <= 3; ++i) {
+        sf2d_free_texture(rooms[i].bg.tex);
+    }
+
     sftd_free_font(font);
 
     // Exit services
