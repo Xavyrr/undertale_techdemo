@@ -142,7 +142,7 @@ $(BUILD): .tremor_patch
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET)-strip.elf $(TARGET).cia $(TARGET).3ds .tremor_patch
+	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET)-strip.elf $(TARGET).cia $(TARGET).3ds $(TARGET).zip .tremor_patch
 	@(cd $(CURDIR)/source/tremor;git reset --hard;)
 #---------------------------------------------------------------------------------
 $(TARGET)-strip.elf: $(BUILD)
@@ -161,7 +161,11 @@ send: $(BUILD)
 #---------------------------------------------------------------------------------
 run: $(BUILD)
 	@citra $(TARGET).3dsx
-
+#---------------------------------------------------------------------------------
+zip: $(BUILD)
+	@mkdir -p $(BUILD)/$(TARGET)
+	@cp -R README.md $(TARGET).3dsx $(TARGET).smdh romfs/* $(BUILD)/$(TARGET)/
+	@(cd $(BUILD); zip -9ru $(TARGET).zip $(TARGET);)
 #---------------------------------------------------------------------------------
 else
 

@@ -3,7 +3,6 @@
 #include <3ds.h>
 #include <sf2d.h>
 #include <sftd.h>
-#include <sfil.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,6 +10,7 @@
 #include <time.h>
 
 #include "sound.h"
+#include "texture.h"
 
 typedef struct position {
     float x;
@@ -28,7 +28,7 @@ int roomEnter = 0; // Entrances
 int player    = 0; // General info
 int playerDir = 0; // Direction
 
-position player_pos = {0, 0};
+position player_pos; // TODO: Initialize player position when we know the loaction, and not before.
 position camera_pos = {0, 0};
 
 float hsp = 0; // Horizontal speed
@@ -60,10 +60,10 @@ sftd_font    *font;
 sf2d_texture* tex_arr_friskWalk[4][4];
 
 char* friskFilenames[4][4] = {
-    {"tex/friskRight0.png", "tex/friskRight1.png", "tex/friskRight0.png", "tex/friskRight1.png"},// Right
-    {"tex/friskFace0.png", "tex/friskFace1.png", "tex/friskFace2.png", "tex/friskFace3.png"}, // Down
-    {"tex/friskLeft0.png", "tex/friskLeft1.png", "tex/friskLeft0.png", "tex/friskLeft1.png"}, // Left
-    {"tex/friskBack0.png", "tex/friskBack1.png", "tex/friskBack2.png", "tex/friskBack3.png"}  // Up
+    {"friskRight0", "friskRight1", "friskRight0", "friskRight1"},// Right
+    {"friskFace0", "friskFace1", "friskFace2", "friskFace3"}, // Down
+    {"friskLeft0", "friskLeft1", "friskLeft0", "friskLeft1"}, // Left
+    {"friskBack0", "friskBack1", "friskBack2", "friskBack3"}  // Up
 };
 
 struct exit {
@@ -112,12 +112,13 @@ void init() {
 
     // Configuring graphics in general (images, textures, etc)
     sf2d_set_clear_color(RGBA8 (0x00, 0x00, 0x00, 0xFF));
-    tex_torielHouse1 = sfil_load_PNG_file("tex/torielHouse1.png", SF2D_PLACE_RAM);
-    tex_torielHouse2 = sfil_load_PNG_file("tex/torielHouse2.png", SF2D_PLACE_RAM);
-    tex_torielHouse3 = sfil_load_PNG_file("tex/torielHouse3.png", SF2D_PLACE_RAM);
-    tex_torielHouse4 = sfil_load_PNG_file("tex/torielHouse4.png", SF2D_PLACE_RAM);
-    tex_torielHouse5 = sfil_load_PNG_file("tex/torielHouse5.png", SF2D_PLACE_RAM);
-    tex_torielHouse6 = sfil_load_PNG_file("tex/torielHouse6.png", SF2D_PLACE_RAM);
+
+    tex_torielHouse1 = loadTexture("torielHouse1");
+    tex_torielHouse2 = loadTexture("torielHouse2");
+    tex_torielHouse3 = loadTexture("torielHouse3");
+    tex_torielHouse4 = loadTexture("torielHouse4");
+    tex_torielHouse5 = loadTexture("torielHouse5");
+    tex_torielHouse6 = loadTexture("torielHouse6");
 
     /* Load Frisk textures
        Loop over every element in tex_arr_friskWalk and load the PNG buffer
@@ -127,7 +128,7 @@ void init() {
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            tex_arr_friskWalk[i][j] = sfil_load_PNG_file(friskFilenames[i][j], SF2D_PLACE_RAM);
+            tex_arr_friskWalk[i][j] = loadTexture(friskFilenames[i][j]);
         }
     }
 
@@ -144,12 +145,12 @@ void init() {
         3, // num_exits
     };
     rooms[1].exits = malloc(rooms[1].num_exit * sizeof(struct exit));
-    rooms[1].exits[0] = (struct exit){ // HACK: Player spawns at 0, 0 by default. Rather than fixing this, just teleport!
+    rooms[1].exits[0] = (struct exit){ // entrance when starting the game.
         1,
         {190, 160},
         {
-            {-1, -1},
-            {1, 1}
+            {0, 0},
+            {0, 0}
         }
     };
     rooms[1].exits[1] = (struct exit){ // 1
@@ -211,6 +212,9 @@ void init() {
             {5, 205}
         }
     };
+
+    // TODO: Add actual save loading logic. For now, just assume this room.
+    player_pos = rooms[room].exits[0].entrance;
 
     // Play music
     home = sound_create();
@@ -279,7 +283,7 @@ void timerStep() {
 }
 
 inline float fclamp(float value, float min, float max) {
-    return fmin(min, fmax(value, max));
+    return fmin(max, fmax(value, min));
 }
 
 // Main part of the coding, where everything works (or not)
