@@ -198,7 +198,7 @@ void init() {
 
     // Reusing 'i' from above.
     // Load room textures.
-    for (i=1; i <= 3; ++i) rooms[i].bg.tex = loadTexture(rooms[i].bg.name);
+    for (i=1; i <= 3; ++i) fillTexture(&rooms[i].bg);
 
     // TODO: Add actual save loading logic. For now, just assume this room.
     player_pos = rooms[room].exits[0].entrance;
@@ -207,6 +207,8 @@ void init() {
     home = sound_create();
     if (home != NULL) audio_load_ogg("sound/music/house1.ogg", home);
     else home->status = -1;
+
+    timerStep();
 }
 
 void render() {
@@ -214,12 +216,12 @@ void render() {
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
 
     // Draw the background (or in this case, the room)
-    sf2d_draw_texture(rooms[room].bg.tex, rooms[room].bg.pos.x + (int)camera_pos.x,
-                                       rooms[room].bg.pos.y + (int)camera_pos.y);
+    sf2d_draw_texture(rooms[room].bg.tex, rooms[room].bg.pos.x - (int)camera_pos.x,
+                                       rooms[room].bg.pos.y - (int)camera_pos.y);
 
     // Draw the player's sprite
-    sf2d_draw_texture(curr_tex, (int)player_pos.x + (int)camera_pos.x,
-                                (int)player_pos.y + (int)camera_pos.y);
+    sf2d_draw_texture(curr_tex, (int)player_pos.x - (int)camera_pos.x,
+                                (int)player_pos.y - (int)camera_pos.y);
 
     // End frame
     sf2d_end_frame();
@@ -367,7 +369,7 @@ int main(int argc, char **argv) {
         // TODO: Clamp the bounds that can be scrolled. Will probably happen with the above.
         if (rooms[room].scrolling) {
             if (player_pos.x >= 300) {
-                camera_pos.x = 300 - player_pos.x;
+                camera_pos.x = player_pos.x - 300;
             }
             if (player_pos.y <= 50) {
                 camera_pos.y = 50 - player_pos.y;
