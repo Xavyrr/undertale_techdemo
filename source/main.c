@@ -65,7 +65,7 @@ struct exit {
 struct room { // TODO: Move all of the room data into another file.
     struct texture bg;
     position collision[2];
-    bool scrolling;
+    position scroll_max;
     unsigned int num_exit;
     struct exit *exits;
 };
@@ -84,6 +84,22 @@ const int FRISK_BACK    = 3;
 bool easterEgg  = false;
 int  easterPage = 0;
 #define MAX_PAGE 1
+
+// Timer for the player's speed
+void timerStep() {
+    // Set previous time as current time
+    prevTime = currTime;
+
+    // Set current time as the 3DS' OS RTC
+    currTime = osGetTime();
+
+    // Set and calculate the timer
+    dt = currTime - prevTime;
+    dt *= 0.15;
+
+    // We don't want to dt to be negative.
+    if (dt < 0) dt = 0;
+}
 
 void init() {
     // Starting services
@@ -126,7 +142,7 @@ void init() {
             {77,  60}, // pos0
             {305, 188} // pos1
         },
-        false, // scrolling
+        {0,0}, // max_scroll
         3, // num_exits
     };
     rooms[1].exits = malloc(rooms[1].num_exit * sizeof(struct exit));
@@ -162,7 +178,7 @@ void init() {
             {60,  69},
             {320, 190}
         },
-        false,
+        {0,0},
         1,
     };
     rooms[2].exits = malloc(rooms[2].num_exit * sizeof(struct exit));
@@ -182,7 +198,7 @@ void init() {
             {0, 130},
             {710, 175}
         },
-        true,
+        {600,0},
         1,
     };
     rooms[3].exits = malloc(rooms[3].num_exit * sizeof(struct exit));
@@ -242,7 +258,7 @@ void render() {
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "FPS: %f", sf2d_get_fps());
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Sprite Timer: %f", sprTimer);
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Player X: %f, Y: %f", player_pos.x, player_pos.y);
-                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Screen X: %f, Y: %f", camera_pos.x, camera_pos.y);
+                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Camera X: %f, Y: %f", camera_pos.x, camera_pos.y);
                 break;
             case 1:
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Samples: %lu", home->waveBuf.nsamples);
@@ -253,22 +269,6 @@ void render() {
     };
     // End frame
     sf2d_end_frame();
-}
-
-// Timer for the player's speed
-void timerStep() {
-    // Set previous time as current time
-    prevTime = currTime;
-
-    // Set current time as the 3DS' OS RTC
-    currTime = osGetTime();
-
-    // Set and calculate the timer
-    dt = currTime - prevTime;
-    dt *= 0.15;
-
-    // We don't want to dt to be negative.
-    if (dt < 0) dt = 0;
 }
 
 inline float fclamp(float value, float min, float max) {
@@ -365,16 +365,22 @@ int main(int argc, char **argv) {
                               rooms[room].collision[1].y);
 
         // Scrolling calculation.
-        // TODO: Preform scrolling that stays still.
-        // TODO: Clamp the bounds that can be scrolled. Will probably happen with the above.
-        if (rooms[room].scrolling) {
-            if (player_pos.x >= 300) {
-                camera_pos.x = player_pos.x - 300;
-            }
-            if (player_pos.y <= 50) {
-                camera_pos.y = 50 - player_pos.y;
-            }
-        } else camera_pos.x = camera_pos.y = 0;
+        // TODO: Make these constants better/customizable.
+        if (player_pos.x - camera_pos.x >= 300) {
+            camera_pos.x = player_pos.x - 300;
+        }
+        else if (player_pos.x - camera_pos.x <= 100) {
+            camera_pos.x = player_pos.x - 100;
+        }
+        camera_pos.x = fclamp(camera_pos.x, 0, rooms[room].scroll_max.x);
+
+        if (player_pos.y - camera_pos.y >= 200) {
+            camera_pos.y = player_pos.y - 200;
+        }
+        else if (player_pos.y - camera_pos.y <= 50) {
+            camera_pos.y = player_pos.y - 50;
+        }
+        camera_pos.y = fclamp(camera_pos.y, 0, rooms[room].scroll_max.y);
 
         // Player sprites
         if (hsp == 0 && vsp == 0) curr_tex = tex_arr_friskWalk[playerDir][0];
