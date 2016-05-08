@@ -32,7 +32,8 @@ struct room rooms[3] = {
 	}
 };
 
-// Maybe this should be named exit_init, because the rooms themselves are already constructed, just not the exits.
+// Maybe this should be named exit_init (for now), because the rooms themselves are already constructed, just not the exits.
+// I think I'll keep it this way, though, so that when it isn't hard coded...
 void room_init() {
 	rooms[0].exits = malloc(rooms[0].num_exit * sizeof(struct exit));
 	memcpy(rooms[0].exits, (struct exit[3]){

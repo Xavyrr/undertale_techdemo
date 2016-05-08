@@ -1,16 +1,45 @@
-From df02c3a54202cfac87ce757ff7ab24a364a2556b Mon Sep 17 00:00:00 2001
+From 59bf831bbfb9c922e9f50396308949689427570c Mon Sep 17 00:00:00 2001
 From: Kitlith <kitling@kitling.ktarian.com>
-Date: Sun, 3 Apr 2016 10:22:23 -0700
-Subject: [PATCH] 3DS/DevkitARM fixes.
+Date: Sat, 7 May 2016 20:47:18 -0700
+Subject: [PATCH] ...
 
 ---
+ codebook.c            |   1 +
+ floor0.c              |   1 +
  iseeking_example.c    | 265 --------------------------------------------------
  ivorbisfile_example.c |  91 -----------------
+ mapping0.c            |   1 +
  misc.h                |  17 ++--
- 3 files changed, 7 insertions(+), 366 deletions(-)
+ res012.c              |   1 +
+ sharedbook.c          |   1 +
+ 8 files changed, 12 insertions(+), 366 deletions(-)
  delete mode 100644 iseeking_example.c
  delete mode 100644 ivorbisfile_example.c
 
+diff --git a/codebook.c b/codebook.c
+index f8b7983..071b827 100644
+--- a/codebook.c
++++ b/codebook.c
+@@ -19,6 +19,7 @@
+ #include <string.h>
+ #include <math.h>
+ #include <ogg/ogg.h>
++#include <alloca.h>
+ #include "ivorbiscodec.h"
+ #include "codebook.h"
+ #include "misc.h"
+diff --git a/floor0.c b/floor0.c
+index 964383e..34b4796 100644
+--- a/floor0.c
++++ b/floor0.c
+@@ -19,6 +19,7 @@
+ #include <string.h>
+ #include <math.h>
+ #include <ogg/ogg.h>
++#include <alloca.h>
+ #include "ivorbiscodec.h"
+ #include "codec_internal.h"
+ #include "registry.h"
 diff --git a/iseeking_example.c b/iseeking_example.c
 deleted file mode 100644
 index dc971ba..0000000
@@ -379,6 +408,18 @@ index 7b0cf10..0000000
 -  fprintf(stderr,"Done.\n");
 -  return(0);
 -}
+diff --git a/mapping0.c b/mapping0.c
+index aa03e85..7b78057 100644
+--- a/mapping0.c
++++ b/mapping0.c
+@@ -20,6 +20,7 @@
+ #include <string.h>
+ #include <math.h>
+ #include <ogg/ogg.h>
++#include <alloca.h>
+ #include "ivorbiscodec.h"
+ #include "mdct.h"
+ #include "codec_internal.h"
 diff --git a/misc.h b/misc.h
 index 1ae4d2e..237410d 100644
 --- a/misc.h
@@ -448,6 +489,30 @@ index 1ae4d2e..237410d 100644
 -
 -
 -
+diff --git a/res012.c b/res012.c
+index f036caa..3e9c3db 100644
+--- a/res012.c
++++ b/res012.c
+@@ -19,6 +19,7 @@
+ #include <string.h>
+ #include <math.h>
+ #include <ogg/ogg.h>
++#include <alloca.h>
+ #include "ivorbiscodec.h"
+ #include "codec_internal.h"
+ #include "registry.h"
+diff --git a/sharedbook.c b/sharedbook.c
+index 188485e..6063e0f 100644
+--- a/sharedbook.c
++++ b/sharedbook.c
+@@ -19,6 +19,7 @@
+ #include <math.h>
+ #include <string.h>
+ #include <ogg/ogg.h>
++#include <alloca.h>
+ #include "misc.h"
+ #include "ivorbiscodec.h"
+ #include "codebook.h"
 -- 
 2.5.0
 

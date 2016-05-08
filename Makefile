@@ -43,7 +43,7 @@ ICON			:= icon.png
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard
 
 CFLAGS	:=	-flto -g -Wall -Os -mword-relocations \
-			-fomit-frame-pointer -ffast-math \
+			-fomit-frame-pointer -ffast-math -std=c11 \
 			$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS

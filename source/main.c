@@ -22,9 +22,11 @@ int room      = 0; // General info
 int roomEnter = 0; // Entrances
 
 // Player variables
-int player    = 0; // General info
+// TODO: Make a struct for the player.
+// int player    = 0; // General info
 
-position player_pos; // TODO: Initialize player position when we know the loaction, and not before.
+// This is one thing that could go into a player struct.
+position player_pos;
 position camera_pos = {0, 0};
 
 float hsp = 0; // Horizontal speed
@@ -36,7 +38,6 @@ int textHeight = 0; // Height
 
 // Timing variables
 int   prevTime = 0; // Previous time
-int   currTime = 0; // Current time
 float dt       = 0; // Movement timing
 float sprTimer = 0; // Sprite timing
 
@@ -45,6 +46,7 @@ sf2d_texture *curr_tex;
 sftd_font    *font;
 
 // Multidirectional array to store all player's walking textures
+// This is one thing that could go into a player struct.
 sf2d_texture* tex_arr_friskWalk[4][4];
 
 char* friskFilenames[4][4] = {
@@ -61,6 +63,7 @@ enum direction {
     BACK
 };
 
+// This is one thing that could go into a player struct.
 enum direction playerDir = 0; // Direction
 
 // Easter Egg variables
@@ -70,18 +73,18 @@ int  easterPage = 0;
 
 // Timer for the player's speed
 void timerStep() {
-    // Set previous time as current time
-    prevTime = currTime;
-
-    // Set current time as the 3DS' OS RTC
-    currTime = osGetTime();
+    int currTime = osGetTime();
 
     // Set and calculate the timer
     dt = currTime - prevTime;
-    dt *= 0.15;
+    dt *= 0.15; // TODO: Why 0.15?
 
     // We don't want to dt to be negative.
+    // TODO: Can this ever actually happen?
     if (dt < 0) dt = 0;
+
+    // Set previous time to the current time
+    prevTime = currTime;
 }
 
 void init() {
@@ -102,13 +105,10 @@ void init() {
     sf2d_set_clear_color(RGBA8 (0x00, 0x00, 0x00, 0xFF));
 
     /* Load Frisk textures
-       Loop over every element in tex_arr_friskWalk and load the PNG buffer
-       Because we're using C99 instad of C++, you have to declare the loop variables before the loop. */
+       Loop over every element in tex_arr_friskWalk and load the PNG buffer. */
 
-    int i, j;
-
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++) {
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
             tex_arr_friskWalk[i][j] = loadTexture(friskFilenames[i][j]);
         }
     }
@@ -117,7 +117,7 @@ void init() {
 
     // Reusing 'i' from above.
     // Load room textures.
-    for (i=0; i < 3; ++i) fillTexture(&rooms[i].bg);
+    for (int i = 0; i < 3; ++i) fillTexture(&rooms[i].bg);
 
     // TODO: Add actual save loading logic. For now, just assume this room.
     player_pos = rooms[room].exits[0].entrance;
@@ -298,9 +298,7 @@ int main(int argc, char **argv) {
             sprTimer -= 4;
         }
 
-        int i;
-
-        for (i = 0; i < rooms[room].num_exit; ++i) {
+        for (int i = 0; i < rooms[room].num_exit; ++i) {
             struct exit next = rooms[room].exits[i];
             if (player_pos.x >= next.collision[0].x &&
                 player_pos.y >= next.collision[0].y &&
@@ -319,15 +317,14 @@ int main(int argc, char **argv) {
     }
 
     // Free images/textures/fonts from memory
-    int i, j;
 
-    for (i = 0; i < 4; ++i) {
-        for (j = 0; j < 4; ++j) {
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
             sf2d_free_texture(tex_arr_friskWalk[i][j]);
         }
     }
 
-    for (i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i) {
         sf2d_free_texture(rooms[i].bg.tex);
     }
 
