@@ -29,6 +29,6 @@ extern struct room rooms[3];
 
 void room_init(void);
 
-int exit_room(const int roomID, struct position *pos);
+struct exit* exit_room(const int roomID, struct position *pos);
 
 #endif /* end of include guard: UT_TD_ROOM */

@@ -21,6 +21,8 @@ struct sound *home;
 int room      = 0; // General info
 int roomEnter = 0; // Entrances
 
+struct exit *next_exit;
+float roomTimer = 255;
 // Player variables
 // TODO: Make a struct for the player.
 // int player    = 0; // General info
@@ -135,12 +137,16 @@ void render() {
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
 
     // Draw the background (or in this case, the room)
-    sf2d_draw_texture(rooms[room].bg.tex, rooms[room].bg.pos.x - (int)camera_pos.x,
-                                       rooms[room].bg.pos.y - (int)camera_pos.y);
+    sf2d_draw_texture_blend(rooms[room].bg.tex,
+                            rooms[room].bg.pos.x - (int)camera_pos.x,
+                            rooms[room].bg.pos.y - (int)camera_pos.y,
+                            RGBA8(0xFF, 0xFF, 0xFF, (int)roomTimer));
 
     // Draw the player's sprite
-    sf2d_draw_texture(curr_tex, (int)player_pos.x - (int)camera_pos.x,
-                                (int)player_pos.y - (int)camera_pos.y);
+    sf2d_draw_texture_blend(curr_tex,
+                            (int)player_pos.x - (int)camera_pos.x,
+                            (int)player_pos.y - (int)camera_pos.y,
+                            RGBA8(0xFF, 0xFF, 0xFF, (int)roomTimer));
 
     // End frame
     sf2d_end_frame();
@@ -291,23 +297,28 @@ int main(int argc, char **argv) {
 
         else curr_tex = tex_arr_friskWalk[playerDir][(int)floor(sprTimer)];
 
-        //Sprite animation timer
+        // Sprite animation timer
+        // TODO: Why .15 * .03 * actual time?
         sprTimer += (.03 * dt);
 
         while (sprTimer >= 4) {
             sprTimer -= 4;
         }
 
-        for (int i = 0; i < rooms[room].num_exit; ++i) {
-            struct exit next = rooms[room].exits[i];
-            if (player_pos.x >= next.collision[0].x &&
-                player_pos.y >= next.collision[0].y &&
-                player_pos.x <= next.collision[1].x &&
-                player_pos.y <= next.collision[1].y) {
-                    room = next.room_id;
-                    player_pos = next.entrance;
-                    break;
-                }
+        if (!next_exit){
+            if (roomTimer < 255) {
+                roomTimer = fmin(roomTimer + (2 * dt), 255);
+            }
+            next_exit = exit_room(room, &player_pos);
+        }
+        else {
+            roomTimer -= 2 * dt;
+            if (roomTimer <= 0) {
+                room = next_exit->room_id;
+                player_pos = next_exit->entrance;
+                next_exit = NULL;
+                roomTimer = 0;
+            }
         }
 
         render();

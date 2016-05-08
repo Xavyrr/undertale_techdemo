@@ -82,7 +82,7 @@ void room_init() {
 	};
 }
 
-int exit_room(const int roomID, struct position *pos) {
+struct exit* exit_room(const int roomID, struct position *pos) {
 	int i;
 
 	for (i = 0; i < rooms[roomID].num_exit; ++i) {
@@ -91,10 +91,9 @@ int exit_room(const int roomID, struct position *pos) {
 			pos->y >= next->collision[0].y &&
 			pos->x <= next->collision[1].x &&
 			pos->y <= next->collision[1].y) {
-				*pos = next->entrance;
-				return next->room_id;
+				return next;
 			}
 	}
 
-	return roomID;
+	return NULL;
 }
