@@ -12,17 +12,17 @@
 #include "common.h"
 #include "sound.h"
 #include "texture.h"
+#include "room.h"
 
 // Sound variable
 struct sound *home;
 
 // Room variables
-int room      = 1; // General info
+int room      = 0; // General info
 int roomEnter = 0; // Entrances
 
 // Player variables
 int player    = 0; // General info
-int playerDir = 0; // Direction
 
 position player_pos; // TODO: Initialize player position when we know the loaction, and not before.
 position camera_pos = {0, 0};
@@ -47,8 +47,6 @@ sftd_font    *font;
 // Multidirectional array to store all player's walking textures
 sf2d_texture* tex_arr_friskWalk[4][4];
 
-// sf2d_texture room_bg[6];
-
 char* friskFilenames[4][4] = {
     {"friskRight0", "friskRight1", "friskRight0", "friskRight1"},// Right
     {"friskFace0", "friskFace1", "friskFace2", "friskFace3"}, // Down
@@ -56,29 +54,14 @@ char* friskFilenames[4][4] = {
     {"friskBack0", "friskBack1", "friskBack2", "friskBack3"}  // Up
 };
 
-struct exit {
-    int room_id;
-    position entrance;
-    position collision[2]; // TODO: Consider replacing array with positions min and max?
+enum direction {
+    RIGHT = 0,
+    FORWARD,
+    LEFT,
+    BACK
 };
 
-struct room { // TODO: Move all of the room data into another file.
-    struct texture bg;
-    position collision[2];
-    position scroll_max;
-    unsigned int num_exit;
-    struct exit *exits;
-};
-
-struct room rooms[4];
-
-// struct room *curRoom = rooms[room];
-
-// Constant variables for the player's walking textures
-const int FRISK_RIGHT   = 0;
-const int FRISK_FORWARD = 1;
-const int FRISK_LEFT    = 2;
-const int FRISK_BACK    = 3;
+enum direction playerDir = 0; // Direction
 
 // Easter Egg variables
 bool easterEgg  = false;
@@ -130,91 +113,11 @@ void init() {
         }
     }
 
-    // Construct rooms. // TODO: Move to another file.
-    // TODO: Move stuff around so that there is a room 0.
-    rooms[1] = (struct room){
-        { // bg
-            "torielHouse1", //name
-            {40, 0}, // pos
-             NULL // The pointer to the texture. May not need to specify, but just in case...
-        },
-        { // collision
-            {77,  60}, // pos0
-            {305, 188} // pos1
-        },
-        {0,0}, // max_scroll
-        3, // num_exits
-    };
-    rooms[1].exits = malloc(rooms[1].num_exit * sizeof(struct exit));
-    rooms[1].exits[0] = (struct exit){ // entrance when starting the game.
-        1,
-        {190, 160},
-        {
-            {0, 0},
-            {0, 0}
-        }
-    };
-    rooms[1].exits[1] = (struct exit){ // 1
-        2, // room_id
-        {319, 160}, // entrance
-        { // collision
-            {0, 145}, // pos1
-            {78,  195}  // pos2
-        }
-    };
-
-    rooms[1].exits[2] = (struct exit){
-        3,
-        {41, 131},
-        {
-            {281, 145},
-            {300, 195}
-        }
-    };
-
-    rooms[2] = (struct room){
-        {"torielHouse2", {40, 0}, NULL},
-        {
-            {60,  69},
-            {320, 190}
-        },
-        {0,0},
-        1,
-    };
-    rooms[2].exits = malloc(rooms[2].num_exit * sizeof(struct exit));
-
-    rooms[2].exits[0] = (struct exit){
-        1,
-        {78, 160},
-        {
-            {319, 145},
-            {400, 195}
-        }
-    };
-
-    rooms[3] = (struct room){
-        {"torielHouse3", {0, 72}, NULL},
-        {
-            {0, 130},
-            {710, 175}
-        },
-        {600,0},
-        1,
-    };
-    rooms[3].exits = malloc(rooms[3].num_exit * sizeof(struct exit));
-
-    rooms[3].exits[0] = (struct exit){
-        1,
-        {280, 160},
-        {
-            {-5, 75},
-            {5, 205}
-        }
-    };
+    room_init();
 
     // Reusing 'i' from above.
     // Load room textures.
-    for (i=1; i <= 3; ++i) fillTexture(&rooms[i].bg);
+    for (i=0; i < 3; ++i) fillTexture(&rooms[i].bg);
 
     // TODO: Add actual save loading logic. For now, just assume this room.
     player_pos = rooms[room].exits[0].entrance;
@@ -322,28 +225,29 @@ int main(int argc, char **argv) {
         hsp = 0;
 
         // Player movement (pretty easy to understand)
+        // TODO: Would it be possible to make this less... iffy?
         if (kHeld & KEY_UP) {
             if (!(kHeld & KEY_DOWN)) {
                 vsp = -.5; // Vertical speed to negative .5
-                playerDir = FRISK_BACK; // Player direction = back
+                playerDir = BACK; // Player direction = back
             }
         }
 
         if (kHeld & KEY_DOWN) {
             vsp = .5; // Vertical speed to .5
-            playerDir = FRISK_FORWARD; // Player direction = up
+            playerDir = FORWARD; // Player direction = up
         }
 
         if (kHeld & KEY_LEFT) {
             if (!(kHeld & KEY_RIGHT)) {
                 hsp = -.5; // Vertical speed to negative .5
-                playerDir = FRISK_LEFT; // Player direction = left
+                playerDir = LEFT; // Player direction = left
             }
         }
 
         if (kHeld & KEY_RIGHT) {
             hsp = .5; // Vertical speed to .5
-            playerDir = FRISK_RIGHT; // Player direction = right
+            playerDir = RIGHT; // Player direction = right
         }
 
         // Diagonal movement speed fix
@@ -423,7 +327,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    for (i = 1; i <= 3; ++i) {
+    for (i = 0; i < 3; ++i) {
         sf2d_free_texture(rooms[i].bg.tex);
     }
 

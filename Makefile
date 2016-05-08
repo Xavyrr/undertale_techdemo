@@ -34,7 +34,7 @@ INCLUDES	:=	include
 
 APP_TITLE		:= Undertale Tech Demo
 APP_DESCRIPTION	:= Unofficial and quickly made demo
-APP_AUTHOR		:= Toby Fox and FALLEN TEAM
+APP_AUTHOR		:= Toby Fox, FALLEN TEAM, and Kitlith
 ICON			:= icon.png
 
 #---------------------------------------------------------------------------------
@@ -42,7 +42,7 @@ ICON			:= icon.png
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard
 
-CFLAGS	:=	-g -Wall -O2 -mword-relocations \
+CFLAGS	:=	-flto -g -Wall -Os -mword-relocations \
 			-fomit-frame-pointer -ffast-math \
 			$(ARCH)
 
@@ -51,7 +51,7 @@ CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+LDFLAGS	:=	-specs=3dsx.specs -flto -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
 LIBS	:= -logg -lsfil -lpng -lsftd -lfreetype -lz -lsf2d -lctru -lm
 
