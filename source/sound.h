@@ -5,17 +5,17 @@
 
 #include <3ds.h>
 #include <stdbool.h>
-#include "tremor/ivorbisfile.h"
+#include <tremor/ivorbisfile.h>
 
 struct sound {
-	OggVorbis_File vf;
-	ndspWaveBuf waveBuf;
-	float mix[12];
-	unsigned long pos;
-	long status;
-	int section;
-	int channel;
-	char *buf;
+        OggVorbis_File vf;
+        ndspWaveBuf waveBuf;
+        float mix[12];
+        unsigned long pos;
+        long status;
+        int section;
+        int channel;
+        char *buf;
 };
 
 void audio_init(void);

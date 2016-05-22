@@ -54,3 +54,7 @@ other
 *.3dsx
 *.elf
 *.smdh
+
+# Editor Files
+*~
+*.gch

@@ -26,34 +26,34 @@ include $(DEVKITARM)/3ds_rules
 #     - icon.png
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
-TARGET		:=	undertale_techdemo
-BUILD		:=	build
-SOURCES		:=	source source/tremor
-#ROMFS		:=	romfs
-INCLUDES	:=	include
+TARGET   := undertale_techdemo
+BUILD    := build
+SOURCES  := source source/tremor
+#ROMFS   := romfs
+INCLUDES := include
 
-APP_TITLE		:= Undertale Tech Demo
-APP_DESCRIPTION	:= Unofficial and quickly made demo
-APP_AUTHOR		:= Toby Fox, FALLEN TEAM, and Kitlith
-ICON			:= icon.png
+APP_TITLE := Undertale Tech Demo
+APP_DESCRIPTION := Unofficial and quickly made demo
+APP_AUTHOR := Toby Fox, FALLEN TEAM, and Kitlith
+ICON  := icon.png
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard
+ARCH     := -march=armv6k -mtune=mpcore -mfloat-abi=hard
 
-CFLAGS	:=	-flto -g -Wall -Os -mword-relocations \
-			-fomit-frame-pointer -ffast-math -std=c11 \
-			$(ARCH)
+CFLAGS   := -flto -g -Wall -Os -mword-relocations \
+            -fomit-frame-pointer -ffast-math -std=c11 \
+            $(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS   += $(INCLUDE) -DARM11 -D_3DS
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
+CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
-ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	:=	-specs=3dsx.specs -flto -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+ASFLAGS  := -g $(ARCH)
+LDFLAGS  := -specs=3dsx.specs -flto -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -logg -lsfil -lpng -lsftd -lfreetype -lz -lsf2d -lctru -lm
+LIBS     := -logg -lvorbisidec -lsfil -lpng -lsftd -lfreetype -lz -lsf2d -lctru -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -131,19 +131,13 @@ endif
 #---------------------------------------------------------------------------------
 all: $(BUILD)
 
-$(BUILD): .tremor_patch
+$(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 #---------------------------------------------------------------------------------
-.tremor_patch:
-	@echo Patching tremor...
-	@(cd $(CURDIR)/source/tremor;git apply ../*.patch;)
-	@touch .tremor_patch
-#---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET)-strip.elf $(TARGET).cia $(TARGET).3ds $(TARGET).zip .tremor_patch
-	@(cd $(CURDIR)/source/tremor;git reset --hard;)
+	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET)-strip.elf $(TARGET).cia $(TARGET).3ds $(TARGET).zip
 #---------------------------------------------------------------------------------
 $(TARGET)-strip.elf: $(BUILD)
 	@$(STRIP) $(TARGET).elf -o $(TARGET)-strip.elf
