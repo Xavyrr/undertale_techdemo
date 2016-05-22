@@ -1,4 +1,0 @@
-[submodule "source/tremor"]
-	path = source/tremor
-	url = https://git.xiph.org/tremor.git
-	ignore = dirty
