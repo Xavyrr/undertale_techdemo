@@ -42,7 +42,7 @@ ICON  := icon.png
 #---------------------------------------------------------------------------------
 ARCH     := -march=armv6k -mtune=mpcore -mfloat-abi=hard
 
-CFLAGS   := -flto -g -Wall -Os -mword-relocations \
+CFLAGS   := -flto -Wall -Wextra -Os -mword-relocations \
             -fomit-frame-pointer -ffast-math -std=c11 \
             $(ARCH)
 

@@ -7,12 +7,12 @@
 #include "common.h"
 
 struct texture {
-    char *name;
+    const char *name;
     position pos;
     sf2d_texture *tex;
 };
 
-sf2d_texture* loadTexture(char const *texName);
+sf2d_texture* loadTexture(const char *texName);
 
 void fillTexture(struct texture *tex);
 

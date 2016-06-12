@@ -51,7 +51,7 @@ sftd_font    *font;
 // This is one thing that could go into a player struct.
 sf2d_texture* tex_arr_friskWalk[4][4];
 
-char* friskFilenames[4][4] = {
+const char *friskFilenames[4][4] = {
     {"friskRight0", "friskRight1", "friskRight0", "friskRight1"},// Right
     {"friskFace0", "friskFace1", "friskFace2", "friskFace3"}, // Down
     {"friskLeft0", "friskLeft1", "friskLeft0", "friskLeft1"}, // Left
@@ -66,7 +66,7 @@ enum direction {
 };
 
 // This is one thing that could go into a player struct.
-enum direction playerDir = 0; // Direction
+enum direction playerDir = RIGHT; // Direction
 
 // Easter Egg variables
 bool easterEgg  = false;
@@ -74,7 +74,7 @@ int  easterPage = 0;
 #define MAX_PAGE 1
 
 // Timer for the player's speed
-void timerStep() {
+void timerStep(void) {
     int currTime = osGetTime();
 
     // Set and calculate the timer
@@ -89,7 +89,7 @@ void timerStep() {
     prevTime = currTime;
 }
 
-void init() {
+void init(void) {
     // Starting services
     sf2d_init();
     sf2d_set_vblank_wait(0);
@@ -132,7 +132,7 @@ void init() {
     timerStep();
 }
 
-void render() {
+void render(void) {
     // Start frame on the top screen
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
 
@@ -185,7 +185,7 @@ inline float fclamp(float value, float min, float max) {
 }
 
 // Main part of the coding, where everything works (or not)
-int main(int argc, char **argv) {
+int main(void) {
     init();
 
     // Main loop

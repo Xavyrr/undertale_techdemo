@@ -19,7 +19,7 @@ struct sound {
 };
 
 void audio_init(void);
-struct sound* sound_create();
+struct sound* sound_create(void);
 void audio_load_ogg(const char *audio, struct sound *sound);
 void sound_loop(struct sound *sound);
 void sound_stop(struct sound *sound);

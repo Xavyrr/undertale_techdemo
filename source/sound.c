@@ -15,7 +15,7 @@ void audio_init() {
 }
 
 struct sound* sound_create() {
-    struct sound *new_sound = malloc(sizeof(struct sound));
+    struct sound *new_sound = (struct sound*)malloc(sizeof(struct sound));
     if (new_sound == NULL) return NULL;
 
     new_sound->pos = 0;
@@ -46,7 +46,7 @@ void audio_load_ogg(const char *name, struct sound *sound) {
     }
     sound->waveBuf.nsamples = (unsigned long)ov_pcm_total(&sound->vf,-1);
 
-    sound->buf = linearAlloc(sound->waveBuf.nsamples * sample_size);
+    sound->buf = (char*)linearAlloc(sound->waveBuf.nsamples * sample_size);
     sound->waveBuf.data_vaddr = sound->buf;
 
     int i;

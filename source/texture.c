@@ -3,7 +3,7 @@
 #include <sfil.h>
 #include <string.h>
 
-sf2d_texture* loadTexture(char const *texName) {
+sf2d_texture* loadTexture(const char *texName) {
     char path[80] = "tex/";
     strcat(path, texName);
     strcat(path, ".png");
