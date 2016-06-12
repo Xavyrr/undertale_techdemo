@@ -104,7 +104,7 @@ void init(void) {
     font = sftd_load_font_file("font/eightbit.ttf");
 
     // Configuring graphics in general (images, textures, etc)
-    sf2d_set_clear_color(RGBA8 (0x00, 0x00, 0x00, 0xFF));
+    sf2d_set_clear_color(RGBA8(0x00, 0x00, 0x00, 0xFF));
 
     /* Load Frisk textures
        Loop over every element in tex_arr_friskWalk and load the PNG buffer. */
@@ -137,16 +137,16 @@ void render(void) {
     sf2d_start_frame(GFX_TOP, GFX_LEFT);
 
     // Draw the background (or in this case, the room)
-    sf2d_draw_texture_blend(rooms[room].bg.tex,
-                            rooms[room].bg.pos.x - (int)camera_pos.x,
-                            rooms[room].bg.pos.y - (int)camera_pos.y,
-                            RGBA8(0xFF, 0xFF, 0xFF, (int)roomTimer));
+    sf2d_draw_texture(rooms[room].bg.tex,
+                      rooms[room].bg.pos.x - (int)camera_pos.x,
+                      rooms[room].bg.pos.y - (int)camera_pos.y);
 
     // Draw the player's sprite
-    sf2d_draw_texture_blend(curr_tex,
-                            (int)player_pos.x - (int)camera_pos.x,
-                            (int)player_pos.y - (int)camera_pos.y,
-                            RGBA8(0xFF, 0xFF, 0xFF, (int)roomTimer));
+    sf2d_draw_texture(curr_tex,
+                      (int)player_pos.x - (int)camera_pos.x,
+                      (int)player_pos.y - (int)camera_pos.y);
+
+    sf2d_draw_rectangle(0, 0, 800, 240, RGBA8(0x00, 0x00, 0x00, 0xFF - (int)roomTimer));
 
     // End frame
     sf2d_end_frame();
@@ -307,12 +307,12 @@ int main(void) {
 
         if (!next_exit){
             if (roomTimer < 255) {
-                roomTimer = fmin(roomTimer + (2 * dt), 255);
+                roomTimer = fmin(roomTimer + (4 * dt), 255);
             }
             next_exit = exit_room(room, &player_pos);
         }
         else {
-            roomTimer -= 2 * dt;
+            roomTimer -= 4 * dt;
             if (roomTimer <= 0) {
                 room = next_exit->room_id;
                 player_pos = next_exit->entrance;
