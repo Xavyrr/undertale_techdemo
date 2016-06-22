@@ -7,22 +7,20 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-int last_id = 0;
-
 void audio_init() {
     ndspInit();
     ndspSetOutputMode(NDSP_OUTPUT_STEREO);
 }
 
-struct sound* sound_create() {
+struct sound* sound_create(enum channel chan) {
     struct sound *new_sound = (struct sound*)malloc(sizeof(struct sound));
     if (new_sound == NULL) return NULL;
 
     new_sound->pos = 0;
-    new_sound->channel = last_id++; // TODO: Better channel management.
+    new_sound->channel = chan;
 
-    memset(&(new_sound->waveBuf), 0, sizeof(ndspWaveBuf));
-    new_sound->waveBuf.looping = true;
+    memset(&(new_sound->waveBuf[0]), 0, sizeof(ndspWaveBuf));
+    new_sound->waveBuf[0].looping = true;
 
     memset(new_sound->mix, 0, sizeof(new_sound->mix));
     new_sound->mix[0] = new_sound->mix[1] = 1.0;
@@ -41,13 +39,12 @@ void audio_load_ogg(const char *name, struct sound *sound) {
 
     /// Copied from ivorbisfile_example.c
     FILE *mus = fopen(name, "rb");
-    if (ov_open(mus, &sound->vf, NULL, 0)) {
+    if (ov_open(mus, sound->vf, NULL, 0)) {
         return;
     }
-    sound->waveBuf.nsamples = (unsigned long)ov_pcm_total(&sound->vf,-1);
+    sound->waveBuf[0].nsamples = (unsigned long)ov_pcm_total(sound->vf,-1);
 
-    sound->buf = (char*)linearAlloc(sound->waveBuf.nsamples * sample_size);
-    sound->waveBuf.data_vaddr = sound->buf;
+    sound->waveBuf[0].data_vaddr = (char*)linearAlloc(sound->waveBuf[0].nsamples * sample_size);
 
     int i;
 
@@ -55,18 +52,18 @@ void audio_load_ogg(const char *name, struct sound *sound) {
         sound_loop(sound);
     }
 
-    ndspChnWaveBufAdd(sound->channel, &sound->waveBuf);
+    ndspChnWaveBufAdd(sound->channel, &sound->waveBuf[0]);
 }
 
 void sound_loop(struct sound *sound) {
     // if (mus_failure <= 0) return;
 
-    long size = sound->waveBuf.nsamples * 4 - sound->pos;
+    long size = sound->waveBuf[0].nsamples * 4 - sound->pos;
     size = (size < 4096)? size : 4096; // min(size, 4096);
 
-    sound->status = ov_read(&sound->vf, sound->buf + sound->pos, size, &sound->section);
+    sound->status = ov_read(sound->vf, sound->waveBuf[0].data_vaddr + sound->pos, size, &sound->section);
     if (sound->status <= 0) {
-        ov_clear(&sound->vf);
+        ov_clear(sound->vf);
         if (sound->status < 0) ndspChnReset(sound->channel);
     }
 
@@ -75,8 +72,8 @@ void sound_loop(struct sound *sound) {
 
 void sound_stop(struct sound *sound) {
     ndspChnReset(sound->channel);
-    GSPGPU_FlushDataCache(sound->buf, sound->waveBuf.nsamples * 4);
-    linearFree(sound->buf);
+    GSPGPU_FlushDataCache(sound->waveBuf[0].data_vaddr, sound->waveBuf[0].nsamples * 4);
+    linearFree(sound->waveBuf[0].data_vaddr);
     // memset (buffer, 0, size);
 }
 

@@ -125,7 +125,7 @@ void init(void) {
     player_pos = rooms[room].exits[0].entrance;
 
     // Play music
-    home = sound_create();
+    home = sound_create(BGM);
     if (home != NULL) audio_load_ogg("sound/music/house1.ogg", home);
     else home->status = -1;
 

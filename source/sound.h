@@ -8,18 +8,22 @@
 #include <tremor/ivorbisfile.h>
 
 struct sound {
-        OggVorbis_File vf;
-        ndspWaveBuf waveBuf;
+        OggVorbis_File *vf;
+        ndspWaveBuf waveBuf[2];
         float mix[12];
         unsigned long pos;
         long status;
         int section;
         int channel;
-        char *buf;
+};
+
+enum channel {
+    BGM = 0,
+    SFX
 };
 
 void audio_init(void);
-struct sound* sound_create(void);
+struct sound* sound_create(enum channel chan);
 void audio_load_ogg(const char *audio, struct sound *sound);
 void sound_loop(struct sound *sound);
 void sound_stop(struct sound *sound);

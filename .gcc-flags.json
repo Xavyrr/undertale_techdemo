@@ -1,7 +1,7 @@
 {
   "execPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc",
-  "gccDefaultCFlags": "-flto -Wall -Wextra -Os -std=gnu11",
-  "gccErrorLimit": 0,
-  "gccIncludePaths": "source/,/opt/devkitpro/libctru/include,/opt/devkitpro/portlibs/armv6k/include",
+  "gccDefaultCFlags": "-c -fsyntax-only -Wall -Wextra -std=gnu11",
+  "gccErrorLimit": -1,
+  "gccIncludePaths": "./source/,/opt/devkitpro/libctru/include,/opt/devkitpro/portlibs/armv6k/include",
   "gccSuppressWarnings": false
 }
