@@ -39,6 +39,7 @@ void audio_load_ogg(const char *name, struct sound *sound) {
 
     /// Copied from ivorbisfile_example.c
     FILE *mus = fopen(name, "rb");
+    sound->vf = (OggVorbis_File*)malloc(sizeof(OggVorbis_File));
     if (ov_open(mus, sound->vf, NULL, 0)) {
         return;
     }
@@ -61,7 +62,7 @@ void sound_loop(struct sound *sound) {
     long size = sound->waveBuf[0].nsamples * 4 - sound->pos;
     size = (size < 4096)? size : 4096; // min(size, 4096);
 
-    sound->status = ov_read(sound->vf, sound->waveBuf[0].data_vaddr + sound->pos, size, &sound->section);
+    sound->status = ov_read(sound->vf, (char*)sound->waveBuf[0].data_vaddr + sound->pos, size, &sound->section);
     if (sound->status <= 0) {
         ov_clear(sound->vf);
         if (sound->status < 0) ndspChnReset(sound->channel);
@@ -73,7 +74,7 @@ void sound_loop(struct sound *sound) {
 void sound_stop(struct sound *sound) {
     ndspChnReset(sound->channel);
     GSPGPU_FlushDataCache(sound->waveBuf[0].data_vaddr, sound->waveBuf[0].nsamples * 4);
-    linearFree(sound->waveBuf[0].data_vaddr);
+    linearFree(sound->waveBuf[0].data_pcm8);
     // memset (buffer, 0, size);
 }
 
