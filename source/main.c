@@ -170,8 +170,8 @@ void render(void) {
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Camera X: %f, Y: %f", camera_pos.x, camera_pos.y);
                 break;
             case 1:
-                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Samples: %lu", home->waveBuf[0].nsamples);
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Buffer Position: %lu", home->pos);
+                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Buffer Offset: %lu", home->offset);
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Status: %li", home->status);
                 break;
         }

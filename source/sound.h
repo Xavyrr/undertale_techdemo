@@ -12,9 +12,11 @@ struct sound {
         ndspWaveBuf waveBuf[2];
         float mix[12];
         unsigned long pos;
+        unsigned long offset;
         long status;
         int section;
         int channel;
+        bool block;
 };
 
 enum channel {

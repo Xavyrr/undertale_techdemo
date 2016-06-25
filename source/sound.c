@@ -16,14 +16,17 @@ struct sound* sound_create(enum channel chan) {
     struct sound *new_sound = (struct sound*)malloc(sizeof(struct sound));
     if (new_sound == NULL) return NULL;
 
-    new_sound->pos = 0;
+    new_sound->pos =
+    new_sound->offset = 0;
+    new_sound->block = false;
     new_sound->channel = chan;
 
     memset(&(new_sound->waveBuf[0]), 0, sizeof(ndspWaveBuf));
-    new_sound->waveBuf[0].looping = true;
+    memset(&(new_sound->waveBuf[1]), 0, sizeof(ndspWaveBuf));
 
     memset(new_sound->mix, 0, sizeof(new_sound->mix));
-    new_sound->mix[0] = new_sound->mix[1] = 1.0;
+    new_sound->mix[0] =
+    new_sound->mix[1] = 1.0;
 
     ndspChnSetInterp(new_sound->channel, NDSP_INTERP_LINEAR);
     ndspChnSetRate(new_sound->channel, 44100);
@@ -35,17 +38,26 @@ struct sound* sound_create(enum channel chan) {
 
 // Audio load/play
 void audio_load_ogg(const char *name, struct sound *sound) {
-	const long sample_size = 4;
+	const unsigned long sample_size = 4;
+    const unsigned long buffer_size = 4096;
+    const unsigned long num_samples = buffer_size / sample_size;
 
     /// Copied from ivorbisfile_example.c
     FILE *mus = fopen(name, "rb");
     sound->vf = (OggVorbis_File*)malloc(sizeof(OggVorbis_File));
-    if (ov_open(mus, sound->vf, NULL, 0)) {
+    if ((sound->status = ov_open(mus, sound->vf, NULL, 0))) {
+        free(sound->vf);
         return;
     }
-    sound->waveBuf[0].nsamples = (unsigned long)ov_pcm_total(sound->vf,-1);
 
-    sound->waveBuf[0].data_vaddr = (char*)linearAlloc(sound->waveBuf[0].nsamples * sample_size);
+    sound->waveBuf[0].nsamples =
+    sound->waveBuf[1].nsamples = num_samples;
+
+    sound->waveBuf[0].status =
+    sound->waveBuf[1].status = NDSP_WBUF_DONE;
+
+    sound->waveBuf[0].data_vaddr = linearAlloc(buffer_size);
+    sound->waveBuf[1].data_vaddr = linearAlloc(buffer_size);
 
     int i;
 
@@ -54,27 +66,37 @@ void audio_load_ogg(const char *name, struct sound *sound) {
     }
 
     ndspChnWaveBufAdd(sound->channel, &sound->waveBuf[0]);
+    ndspChnWaveBufAdd(sound->channel, &sound->waveBuf[1]);
 }
 
 void sound_loop(struct sound *sound) {
     // if (mus_failure <= 0) return;
 
     long size = sound->waveBuf[0].nsamples * 4 - sound->pos;
-    size = (size < 4096)? size : 4096; // min(size, 4096);
 
-    sound->status = ov_read(sound->vf, (char*)sound->waveBuf[0].data_vaddr + sound->pos, size, &sound->section);
-    if (sound->status <= 0) {
-        ov_clear(sound->vf);
-        if (sound->status < 0) ndspChnReset(sound->channel);
+    if (sound->waveBuf[sound->block].status == NDSP_WBUF_DONE){
+        sound->status = ov_read(sound->vf, (char*)sound->waveBuf[sound->block].data_vaddr + sound->pos - sound->offset, size, &sound->section);
+
+        if (sound->status <= 0) {
+            ov_clear(sound->vf);
+
+            if (sound->status < 0) ndspChnReset(sound->channel);
+
+            else {
+                sound->offset += sound->waveBuf[0].nsamples * 4;
+                sound->block = !sound->block;
+            }
+
+        } else sound->pos += sound->status;
     }
-
-    else sound->pos += sound->status;
 }
 
 void sound_stop(struct sound *sound) {
     ndspChnReset(sound->channel);
     GSPGPU_FlushDataCache(sound->waveBuf[0].data_vaddr, sound->waveBuf[0].nsamples * 4);
-    linearFree(sound->waveBuf[0].data_pcm8);
+    linearFree((void*)sound->waveBuf[0].data_vaddr);
+    linearFree((void*)sound->waveBuf[1].data_vaddr);
+    free(sound->vf);
     // memset (buffer, 0, size);
 }
 
