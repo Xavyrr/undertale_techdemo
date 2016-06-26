@@ -72,7 +72,7 @@ void audio_load_ogg(const char *name, struct sound *sound) {
 void sound_loop(struct sound *sound) {
     // if (mus_failure <= 0) return;
 
-    long size = sound->waveBuf[0].nsamples * 4 - sound->pos;
+    long size = sound->waveBuf[0].nsamples * 4 - (sound->pos - sound->offset);
 
     if (sound->waveBuf[sound->block].status == NDSP_WBUF_DONE){
         sound->status = ov_read(sound->vf, (char*)sound->waveBuf[sound->block].data_vaddr + sound->pos - sound->offset, size, &sound->section);
@@ -84,6 +84,7 @@ void sound_loop(struct sound *sound) {
 
             else {
                 sound->offset += sound->waveBuf[0].nsamples * 4;
+                ndspChnWaveBufAdd(sound->channel, &sound->waveBuf[sound->block]);
                 sound->block = !sound->block;
             }
 

@@ -172,6 +172,7 @@ void render(void) {
             case 1:
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Buffer Position: %lu", home->pos);
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Buffer Offset: %lu", home->offset);
+                sftd_draw_textf(font, 10, y+=20, RGBA8(255, 255, 255, 255), 12, "Block: %u", home->block);
                 sftd_draw_textf(font, 10, y+=20, RGBA8(255, 0, 0, 255), 12, "Status: %li", home->status);
                 break;
         }
