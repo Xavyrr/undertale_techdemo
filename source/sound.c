@@ -39,7 +39,7 @@ struct sound* sound_create(enum channel chan) {
 // Audio load/play
 void audio_load_ogg(const char *name, struct sound *sound) {
 	const unsigned long sample_size = 4;
-    const unsigned long buffer_size = 4096;
+    const unsigned long buffer_size = 40960;
     const unsigned long num_samples = buffer_size / sample_size;
 
     /// Copied from ivorbisfile_example.c
@@ -58,21 +58,12 @@ void audio_load_ogg(const char *name, struct sound *sound) {
 
     sound->waveBuf[0].data_vaddr = linearAlloc(buffer_size);
     sound->waveBuf[1].data_vaddr = linearAlloc(buffer_size);
-
-    int i;
-
-    for (i = 0; i < 6; ++i) {
-        sound_loop(sound);
-    }
-
-    ndspChnWaveBufAdd(sound->channel, &sound->waveBuf[0]);
-    ndspChnWaveBufAdd(sound->channel, &sound->waveBuf[1]);
 }
 
 void sound_loop(struct sound *sound) {
     // if (mus_failure <= 0) return;
 
-    long size = sound->waveBuf[0].nsamples * 4 - (sound->pos - sound->offset);
+    long size = sound->waveBuf[sound->block].nsamples * 4 - (sound->pos - sound->offset);
 
     if (sound->waveBuf[sound->block].status == NDSP_WBUF_DONE){
         sound->status = ov_read(sound->vf, (char*)sound->waveBuf[sound->block].data_vaddr + sound->pos - sound->offset, size, &sound->section);
@@ -82,19 +73,21 @@ void sound_loop(struct sound *sound) {
 
             if (sound->status < 0) ndspChnReset(sound->channel);
 
-            else {
-                sound->offset += sound->waveBuf[0].nsamples * 4;
+        } else {
+            sound->pos += sound->status;
+            if (sound->status == size) {
+                sound->offset += sound->waveBuf[sound->block].nsamples * 4;
                 ndspChnWaveBufAdd(sound->channel, &sound->waveBuf[sound->block]);
                 sound->block = !sound->block;
             }
-
-        } else sound->pos += sound->status;
+        }
     }
 }
 
 void sound_stop(struct sound *sound) {
     ndspChnReset(sound->channel);
     GSPGPU_FlushDataCache(sound->waveBuf[0].data_vaddr, sound->waveBuf[0].nsamples * 4);
+    GSPGPU_FlushDataCache(sound->waveBuf[1].data_vaddr, sound->waveBuf[1].nsamples * 4);
     linearFree((void*)sound->waveBuf[0].data_vaddr);
     linearFree((void*)sound->waveBuf[1].data_vaddr);
     free(sound->vf);

@@ -191,7 +191,7 @@ int main(void) {
 
     // Main loop
     while (aptMainLoop()) {
-        if (home->status > 0) sound_loop(home);
+        sound_loop(home);
 
         // Verify button presses
         hidScanInput();
