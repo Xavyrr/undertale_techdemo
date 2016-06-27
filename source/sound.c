@@ -16,8 +16,7 @@ struct sound* sound_create(enum channel chan) {
     struct sound *new_sound = (struct sound*)malloc(sizeof(struct sound));
     if (new_sound == NULL) return NULL;
 
-    new_sound->pos =
-    new_sound->offset = 0;
+    new_sound->block_pos = 0;
     new_sound->block = false;
     new_sound->channel = chan;
 
@@ -29,7 +28,6 @@ struct sound* sound_create(enum channel chan) {
     new_sound->mix[1] = 1.0;
 
     ndspChnSetInterp(new_sound->channel, NDSP_INTERP_LINEAR);
-    ndspChnSetRate(new_sound->channel, 44100);
     ndspChnSetFormat(new_sound->channel, NDSP_FORMAT_STEREO_PCM16);
     ndspChnSetMix(new_sound->channel, new_sound->mix);
 
@@ -50,6 +48,8 @@ void audio_load_ogg(const char *name, struct sound *sound) {
         return;
     }
 
+    ndspChnSetRate(sound->channel, ov_bitrate(sound->vf, -1));
+
     sound->waveBuf[0].nsamples =
     sound->waveBuf[1].nsamples = num_samples;
 
@@ -63,10 +63,10 @@ void audio_load_ogg(const char *name, struct sound *sound) {
 void sound_loop(struct sound *sound) {
     // if (mus_failure <= 0) return;
 
-    long size = sound->waveBuf[sound->block].nsamples * 4 - (sound->pos - sound->offset);
+    long size = sound->waveBuf[sound->block].nsamples * 4 - sound->block_pos;
 
     if (sound->waveBuf[sound->block].status == NDSP_WBUF_DONE){
-        sound->status = ov_read(sound->vf, (char*)sound->waveBuf[sound->block].data_vaddr + sound->pos - sound->offset, size, &sound->section);
+        sound->status = ov_read(sound->vf, (char*)sound->waveBuf[sound->block].data_vaddr + sound->block_pos, size, &sound->section);
 
         if (sound->status <= 0) {
             ov_clear(sound->vf);
@@ -74,9 +74,9 @@ void sound_loop(struct sound *sound) {
             if (sound->status < 0) ndspChnReset(sound->channel);
 
         } else {
-            sound->pos += sound->status;
+            sound->block_pos += sound->status;
             if (sound->status == size) {
-                sound->offset += sound->waveBuf[sound->block].nsamples * 4;
+                sound->block_pos = 0;
                 ndspChnWaveBufAdd(sound->channel, &sound->waveBuf[sound->block]);
                 sound->block = !sound->block;
             }

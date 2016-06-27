@@ -8,15 +8,14 @@
 #include <tremor/ivorbisfile.h>
 
 struct sound {
-        OggVorbis_File *vf;
-        ndspWaveBuf waveBuf[2];
-        float mix[12];
-        unsigned long pos;
-        unsigned long offset;
-        long status;
-        int section;
-        int channel;
-        bool block;
+    OggVorbis_File *vf;
+    ndspWaveBuf waveBuf[2];
+    float mix[12];
+    long status;
+    int section;
+    int channel;
+    bool block;
+    unsigned long block_pos;
 };
 
 enum channel {
