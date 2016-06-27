@@ -28,6 +28,7 @@ struct sound* sound_create(enum channel chan) {
     new_sound->mix[1] = 1.0;
 
     ndspChnSetInterp(new_sound->channel, NDSP_INTERP_LINEAR);
+    ndspChnSetRate(new_sound->channel, 44100);
     ndspChnSetFormat(new_sound->channel, NDSP_FORMAT_STEREO_PCM16);
     ndspChnSetMix(new_sound->channel, new_sound->mix);
 
@@ -47,8 +48,6 @@ void audio_load_ogg(const char *name, struct sound *sound) {
         free(sound->vf);
         return;
     }
-
-    ndspChnSetRate(sound->channel, ov_bitrate(sound->vf, -1));
 
     sound->waveBuf[0].nsamples =
     sound->waveBuf[1].nsamples = num_samples;
