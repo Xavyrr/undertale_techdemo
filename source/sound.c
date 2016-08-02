@@ -42,10 +42,9 @@ void audio_load_ogg(const char *name, struct sound *sound) {
     const unsigned long num_samples = buffer_size / sample_size;
 
     /// Copied from ivorbisfile_example.c
+    sound->filename = strdup(name);
     FILE *mus = fopen(name, "rb");
-    sound->vf = (OggVorbis_File*)malloc(sizeof(OggVorbis_File));
-    if ((sound->status = ov_open(mus, sound->vf, NULL, 0))) {
-        free(sound->vf);
+    if ((sound->status = ov_open(mus, &sound->vf, NULL, 0))) {
         return;
     }
 
@@ -65,12 +64,18 @@ void sound_loop(struct sound *sound) {
     long size = sound->waveBuf[sound->block].nsamples * 4 - sound->block_pos;
 
     if (sound->waveBuf[sound->block].status == NDSP_WBUF_DONE){
-        sound->status = ov_read(sound->vf, (char*)sound->waveBuf[sound->block].data_vaddr + sound->block_pos, size, &sound->section);
+        read:
+        sound->status = ov_read(&sound->vf, (char*)sound->waveBuf[sound->block].data_vaddr + sound->block_pos, size, &sound->section);
 
         if (sound->status <= 0) {
-            ov_clear(sound->vf);
+            ov_clear(&sound->vf);
 
             if (sound->status < 0) ndspChnReset(sound->channel);
+            else {
+                // Clarity? Forget that, I don't want to make an new variable. >_<
+                sound->status = ov_open(fopen(sound->filename, "rb"), &sound->vf, NULL, 0);
+                goto read; // TODO: Better way to do this?
+            }
 
         } else {
             sound->block_pos += sound->status;
@@ -89,7 +94,6 @@ void sound_stop(struct sound *sound) {
     GSPGPU_FlushDataCache(sound->waveBuf[1].data_vaddr, sound->waveBuf[1].nsamples * 4);
     linearFree((void*)sound->waveBuf[0].data_vaddr);
     linearFree((void*)sound->waveBuf[1].data_vaddr);
-    free(sound->vf);
     // memset (buffer, 0, size);
 }
 

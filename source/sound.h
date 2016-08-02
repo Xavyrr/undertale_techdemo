@@ -8,7 +8,8 @@
 #include <tremor/ivorbisfile.h>
 
 struct sound {
-    OggVorbis_File *vf;
+    const char* filename;
+    OggVorbis_File vf;
     ndspWaveBuf waveBuf[2];
     float mix[12];
     long status;
