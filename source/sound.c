@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+void ogg_thread(void *data);
+
 void audio_init() {
     ndspInit();
     ndspSetOutputMode(NDSP_OUTPUT_STEREO);
@@ -56,9 +58,12 @@ void audio_load_ogg(const char *name, struct sound *sound) {
 
     sound->waveBuf[0].data_vaddr = linearAlloc(buffer_size);
     sound->waveBuf[1].data_vaddr = linearAlloc(buffer_size);
+
+    LightEvent_Init(&sound->stopEvent, RESET_ONESHOT);
+    sound->thread = threadCreate(ogg_thread, sound, 0x1000, 0x3F, -2, false);
 }
 
-void sound_loop(struct sound *sound) {
+void ogg_loop(struct sound *sound) {
     // if (mus_failure <= 0) return;
 
     long size = sound->waveBuf[sound->block].nsamples * 4 - sound->block_pos;
@@ -88,7 +93,17 @@ void sound_loop(struct sound *sound) {
     }
 }
 
+void ogg_thread(void *data) {
+    struct sound *sound = (struct sound*)data;
+    while (!LightEvent_TryWait(&sound->stopEvent)) ogg_loop(sound);
+    LightEvent_Clear(&sound->stopEvent);
+}
+
 void sound_stop(struct sound *sound) {
+    LightEvent_Signal(&sound->stopEvent);
+    threadJoin(sound->thread, U64_MAX);
+    threadFree(sound->thread);
+
     ndspChnReset(sound->channel);
     GSPGPU_FlushDataCache(sound->waveBuf[0].data_vaddr, sound->waveBuf[0].nsamples * 4);
     GSPGPU_FlushDataCache(sound->waveBuf[1].data_vaddr, sound->waveBuf[1].nsamples * 4);

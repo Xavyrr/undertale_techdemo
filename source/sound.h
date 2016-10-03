@@ -17,6 +17,8 @@ struct sound {
     int channel;
     bool block;
     unsigned long block_pos;
+    Thread thread;
+    LightEvent stopEvent;
 };
 
 enum channel {
@@ -27,7 +29,6 @@ enum channel {
 void audio_init(void);
 struct sound* sound_create(enum channel chan);
 void audio_load_ogg(const char *audio, struct sound *sound);
-void sound_loop(struct sound *sound);
 void sound_stop(struct sound *sound);
 void audio_stop(void);
 

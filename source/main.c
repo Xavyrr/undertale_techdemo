@@ -190,7 +190,6 @@ int main(void) {
 
     // Main loop
     while (aptMainLoop()) {
-        sound_loop(home);
 
         // Verify button presses
         hidScanInput();
