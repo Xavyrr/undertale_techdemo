@@ -39,6 +39,7 @@ int mkey_left = 0;
 int mkey_down = 0;
 
 //Movement variables
+float mspeed = .5; // Speed multiplier
 float hsp = 0; // Horizontal speed
 float vsp = 0; // Vertical speed
 
