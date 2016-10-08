@@ -1,0 +1,7 @@
+{
+  "execPath": "arm-none-eabi-gcc",
+  "gccDefaultCFlags": "-c -Wall -Wextra -std=gnu11",
+  "gccErrorLimit": -1,
+  "gccIncludePaths": "./source/,/home/kitlith/devkitPro/libctru/include,/home/kitlith/devkitPro/portlibs/armv6k/include",
+  "gccSuppressWarnings": false
+}

@@ -2,7 +2,7 @@
 .SUFFIXES:
 #---------------------------------------------------------------------------------
 
-ifeq ($(strip $(DEVKITARM)),)
+ifeq ($(strip $(DEVKITARM)),) # This is in 3ds_rules, why is it here?
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
@@ -26,34 +26,34 @@ include $(DEVKITARM)/3ds_rules
 #     - icon.png
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
-TARGET		:=	undertale_techdemo
-BUILD		:=	build
-SOURCES		:=	source
-DATA		:=	data
-INCLUDES	:=	include
+TARGET   := undertale_techdemo
+BUILD    := build
+SOURCES  := source source/tremor
+#ROMFS   := romfs
+INCLUDES := include
 
-APP_TITLE		:= Undertale Tech Demo
-APP_DESCRIPTION	:= Unofficial and quickly made demo
-APP_AUTHOR		:= Toby Fox and FALLEN TEAM
-ICON			:= icon.png
+APP_TITLE := Undertale Tech Demo
+APP_DESCRIPTION := Unofficial and quickly made demo
+APP_AUTHOR := Toby Fox, FALLEN TEAM, and Kitlith
+ICON  := icon.png
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard
+ARCH     := -march=armv6k -mtune=mpcore -mfloat-abi=hard
 
-CFLAGS	:=	-g -Wall -O2 -mword-relocations \
-			-fomit-frame-pointer -ffast-math \
-			$(ARCH)
+CFLAGS   := -flto -Wall -Wextra -Os -mword-relocations \
+            -fomit-frame-pointer -ffast-math -std=c11 \
+            $(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS   += $(INCLUDE) -DARM11 -D_3DS
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
+CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
-ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+ASFLAGS  := -g $(ARCH)
+LDFLAGS  := -specs=3dsx.specs -flto -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lsfil -lpng -lsftd -lfreetype -lz -lsf2d -lctru -lm
+LIBS     := -logg -lvorbisidec -lcitro3d -lsfil -lpng -lsftd -lfreetype -lz -lsf2d -lctru -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -122,6 +122,10 @@ ifeq ($(strip $(NO_SMDH)),)
 	export _3DSXFLAGS += --smdh=$(CURDIR)/$(TARGET).smdh
 endif
 
+ifneq ($(ROMFS),)
+	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
+endif
+
 .PHONY: $(BUILD) clean all
 
 #---------------------------------------------------------------------------------
@@ -130,11 +134,10 @@ all: $(BUILD)
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
-
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET)-strip.elf $(TARGET).cia $(TARGET).3ds
+	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET)-strip.elf $(TARGET).cia $(TARGET).3ds $(TARGET).zip
 #---------------------------------------------------------------------------------
 $(TARGET)-strip.elf: $(BUILD)
 	@$(STRIP) $(TARGET).elf -o $(TARGET)-strip.elf
@@ -152,7 +155,11 @@ send: $(BUILD)
 #---------------------------------------------------------------------------------
 run: $(BUILD)
 	@citra $(TARGET).3dsx
-
+#---------------------------------------------------------------------------------
+zip: $(BUILD)
+	@mkdir -p $(BUILD)/$(TARGET)
+	@cp -R README.md $(TARGET).3dsx $(TARGET).smdh romfs/* $(BUILD)/$(TARGET)/
+	@(cd $(BUILD); zip -9ru $(TARGET).zip $(TARGET);)
 #---------------------------------------------------------------------------------
 else
 
@@ -187,14 +194,7 @@ $(OUTPUT).elf	:	$(OFILES)
 #---------------------------------------------------------------------------------
 %.jpeg.o:	%.jpeg
 #---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
-
-#---------------------------------------------------------------------------------
-%.png.o	:	%.png
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
+	@echo $(notdir $<)friskBack0_png
 
 # WARNING: This is not the right way to do this! TODO: Do it right!
 #---------------------------------------------------------------------------------
